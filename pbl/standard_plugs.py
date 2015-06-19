@@ -43,7 +43,7 @@ class FakeTrackGenerator:
         track = None
         if self.count > 0:
             track = tlib.make_track(self._fake_id(), 
-                self._fake_name(), self._fake_name(), 'FakeTrackGenerator')
+                self._fake_name(), self._fake_name(), 180, 'FakeTrackGenerator')
             self.count -= 1
         return track
 
@@ -212,6 +212,42 @@ class Buffer:
             return self.buffer.pop()
         else:
             return None
+
+class LongerThan:
+    def __init__(self, source, time=1200):
+        self.name = 'LongerThan ' + str(time) + ' secs'
+        self.source = source
+        self.time = time
+        self.cur_time = 0
+
+    def next_track(self):
+        if self.cur_time > self.time:
+            return None
+        else:
+            track = self.source.next_track()
+            if track:
+                duration = tlib.get_attr(track, 'duration')
+                self.cur_time += duration
+            return track
+
+class ShorterThan:
+    def __init__(self, source, time=1200):
+        self.name = 'Shorter Than ' + str(time) + ' secs'
+        self.source = source
+        self.time = time
+        self.cur_time = 0
+
+    def next_track(self):
+        if self.cur_time >= self.time:
+            return None
+        else:
+            track = self.source.next_track()
+            if track:
+                duration = tlib.get_attr(track, 'duration')
+                self.cur_time += duration
+                if self.cur_time >= self.time:
+                    return None
+            return track
 
 class Sorter:
     def __init__(self, source, attr, reverse=False, max_size=0):

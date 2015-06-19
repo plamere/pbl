@@ -328,8 +328,20 @@ def tester40():
     ps = AlbumSource('Tarkus')
     runner(ps, max_tracks=20)
 
+def tester41():
+    ''' No more than 30 mins of tarkus
+    '''
+    ps = ShorterThan(AlbumSource('Tarkus'), 30 * 60)
+    runner(ps)
+
+def tester42():
+    ''' No less than 30 mins of tarkus
+    '''
+    ps = LongerThan(AlbumSource('Tarkus'), 30 * 60)
+    runner(ps)
+
 
 if __name__ == '__main__':
-    tester39()
-    tester40()
+    tester41()
+    tester42()
     

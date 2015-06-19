@@ -33,7 +33,8 @@ class BoilTheFrogSource:
         for artist in js['path']:
             track = random.choice(artist['songs'])
             tid = 'spotify:track:' + track['id']
-            tlib.make_track(tid, track['title'], artist['name'], 'frog')
+            # TODO fix duration here
+            tlib.make_track(tid, track['title'], artist['name'], 180, 'frog')
             tracks.append(tid)
         return tracks
 

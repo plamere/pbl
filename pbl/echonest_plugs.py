@@ -118,7 +118,8 @@ def _flatten_en_song(song, id):
 
 def _add_song(source, song):
     id = utils.uri_to_id(song['tracks'][0]['foreign_id'])
-    tlib.make_track(id, song['title'], song['artist_name'], source)
+    dur = int(song['audio_summary']['duration'] )
+    tlib.make_track(id, song['title'], song['artist_name'], dur, source)
     tlib.annotate_track(id, 'echonest', _flatten_en_song(song, id))
     return id
 

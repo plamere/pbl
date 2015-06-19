@@ -247,8 +247,9 @@ def _annotate_tracks_with_spotify_data(tids):
         tlib.annotate_track(track['id'], 'spotify', track)
 
 def _add_track(source, track):
+    dur = int(track['duration_ms'] / 1000.)
     tlib.make_track(track['id'], track['name'], 
-                track['artists'][0]['name'], source)
+                track['artists'][0]['name'], dur, source)
     tlib.annotate_track(track['id'], 'spotify', _flatten_track(track))
 
 def _flatten_track(track):

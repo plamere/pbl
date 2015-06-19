@@ -25,11 +25,12 @@ class TrackLibrary:
         else:
             return '(none)'
 
-    def make_track(self, id, title, artist, source):
+    def make_track(self, id, title, artist, dur, source):
         track = {
             'id': id,
             'title': title,
             'artist': artist,
+            'duration': dur,
             'src': source
         }
         self.tmap[id] = track
