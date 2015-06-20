@@ -71,6 +71,12 @@ To get started, install **pbl** with::
 
 this should take care of all the dependencies (including spotipy, pyen and others).
 
+Or you can get the source from github at https://github.com/plamere/pbl and
+install it with::
+
+    % python setup.py install
+
+
 Once installed, just **import pbl** and you'll have everything you need.  Here
 are a few more quick examples to give you a taste of the kind of things you can
 do with **PBL**.
@@ -277,8 +283,12 @@ script::
 The resulting playlist has is filled with long Jazz tracks (no shorter than 5
 minutes) and short Teen Party tracks (no longer than 3 minutes).
 
+Even more examples
+==================
+There are even more examples in the repos at https://github.com/plamere/pbl/tree/master/examples
+
 Using PBL
-===========
+=========
 In PBL you create a pipeline of objects that contribute to the playlist.
 Typically an object in the pipeline will pull tracks from upstream, process them
 and make them available for objects that are downstream in the pipeline. The
@@ -286,11 +296,11 @@ pipeline contains at least one **Source** object and will typically include
 **Operator** objects, **Filter** objects, **Sorting** objects and **Sink** objects. Read on to learn more about the different types of objects.
 
 Sources
-----------
+-------
 These objects are the source of tracks in a pipeline
 
 Spotify Sources
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
   * **AlbumSource** - produces tracks from the given album
   * **ArtistTopTracks** - produces the top tracks for a given artist
   * **PlaylistSource** - poroduces tracks from a Spotify Playlist
