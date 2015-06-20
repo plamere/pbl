@@ -8,7 +8,7 @@ from pbl import *
 '''
 
 if __name__ == '__main__':
-    teen_party = First(Sorter(PlaylistSource('Teen Party'), 'spotify.duration_ms'), 10)
-    jazz_classics = Last(Sorter(PlaylistSource('Jazz Classics'), 'spotify.duration_ms'), 10)
+    teen_party = First(Sorter(PlaylistSource('Teen Party'), 'duration'), 10)
+    jazz_classics = Last(Sorter(PlaylistSource('Jazz Classics'), 'duration'), 10)
     both = Alternate([teen_party, Reverse(jazz_classics)])
-    show_source(both, props=['spotify.duration_ms', 'src'])
+    show_source(both, props=['duration', 'src'])

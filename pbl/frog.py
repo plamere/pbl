@@ -3,6 +3,14 @@ import random
 from track_manager import tlib
 
 class BoilTheFrogSource:
+    '''
+        a PBL source that generates a list of tracks that gradually go from the
+        starting artist to the ending artist
+
+        :param start: the starting artist
+        :param end: the ending artist
+
+    '''
 
     def __init__(self, start, end=None):
         self.name = 'Path from ' + start + ' to ' + end

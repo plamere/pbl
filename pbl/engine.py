@@ -1,6 +1,15 @@
+'''
+    methods for running a PBL pipeline
+'''
 import standard_plugs
 
 def run_source(source, max_tracks=40):
+    '''
+        pulls tracks from the given source
+
+        :param source: the source of tracks
+        :param max_tracks: the maximum number of tracks to pull
+    '''
     count = 0
     for which in xrange(max_tracks):
         track = source.next_track()
@@ -13,6 +22,14 @@ def run_source(source, max_tracks=40):
 
 
 def get_tracks(source, max_tracks=40):
+    '''
+        pulls tracks from the given source and returns them
+
+        :param source: the source of tracks
+        :param max_tracks: the maximum number of tracks to pull
+        :return: a list of tracks
+
+    '''
     out = []
     for which in xrange(max_tracks):
         track = source.next_track()
@@ -23,6 +40,13 @@ def get_tracks(source, max_tracks=40):
     return out
 
 def show_source(source, ntracks = 100, props=[]):
+    '''
+        pulls tracks from the given source and displays them
+
+        :param source: the source of tracks
+        :param ntracks: the maximum number of tracks to pull
+        :param props: properties to display
+    '''
     print
     print source.name
     pipeline = standard_plugs.Dumper(source, props)
