@@ -6,9 +6,6 @@
 .. image:: images/spotify-web-api-doc.jpg
    :width: 100 %
 
-.. toctree::
-   :maxdepth: 2
-
 The Playlist Builder Library
 =============================
 
@@ -389,7 +386,6 @@ Frequently Asked Questions
 ==========================
  * **I get an spotipy.oauth2.SpotifyOauthError: No client id error, what do I do?**  You need to set up your Spotify API credentials. See the **Quick Start** section for more details.
  * **I get an error pyen.PyenConfigurationException: Can't find your API keyanywhere, what do I do?** You need to set up your Echo Nest API credentials.  See the **Quick Start** for more details. 
-
 
 
 Indices and tables
