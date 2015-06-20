@@ -4,3 +4,5 @@ experiments
 metal.json
 .*
 build
+dist
+*.egg-info
