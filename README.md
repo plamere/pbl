@@ -49,7 +49,7 @@ combined = Shuffler(Concatenate([classic_rock, new_music]))
 combined = PlaylistSave(combined, 'my morning commute', 'plamere')
 show_source(combined)
 ```
-Now, whenever the program is run, my 'my morning commute' playlist will be updated will be updated with a different set of tracks sampled from Rock Classics and New Music Tuesday.
+Now, whenever the program is run, my 'my morning commute' playlist will be updated with a different set of tracks sampled from Rock Classics and New Music Tuesday.
 
 ## Quick Start
 To get started, install __pbl__ with:
@@ -60,7 +60,7 @@ To get started, install __pbl__ with:
 
 this should take care of all the dependencies (including spotipy, pyen and others).
 
-Once installed, just __import pbl__ and you'll have everything you need.  Here are a few more quick examples to give you a taste of the kind of things you can do with __PBL__.
+Once installed, just __import pbl__ and you'll have everything you need.  
 
 ### Setup  your Spotify API credentials
 To use any of the Spotify sources or sinks you'll need to get a Spotify API key. See this [documentation](http://spotipy.readthedocs.org/en/latest/#authorized-requests) in the Spotipy docs on how to get a key and how to set the credentials.
@@ -72,7 +72,7 @@ To use any of the Echo Nest sources or filters you'll need to get an Echo Nest A
   * Set the API key - you can do this one of two ways:
 Set an environment variable named ECHO\_NEST\_API\_KEY to your API key
 
-
+## More Examples
 A full set of examples can be found in the [online
 documentation](http://pbl.readthedocs.org/) and in the [PBL examples
 directory](https://github.com/plamere/pbl/tree/master/examples).

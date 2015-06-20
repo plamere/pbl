@@ -11,4 +11,5 @@ if __name__ == '__main__':
     teen_party = First(Sorter(PlaylistSource('Teen Party'), 'duration'), 10)
     jazz_classics = Last(Sorter(PlaylistSource('Jazz Classics'), 'duration'), 10)
     both = Alternate([teen_party, Reverse(jazz_classics)])
+    both = PlaylistSave(both, 'selfish dad', 'plamere')
     show_source(both, props=['duration', 'src'])
