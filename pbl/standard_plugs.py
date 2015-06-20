@@ -33,7 +33,7 @@ class Annotator:
         self.annotator['annotator'](self.fillbuf)
         self.fillbuf = []
 
-class FakeTrackGenerator:
+class FakeTrackSource:
     def __init__(self, count=10):
         self.name = 'FakeTracks'
         self.count = count
@@ -43,7 +43,7 @@ class FakeTrackGenerator:
         track = None
         if self.count > 0:
             track = tlib.make_track(self._fake_id(), 
-                self._fake_name(), self._fake_name(), 180, 'FakeTrackGenerator')
+                self._fake_name(), self._fake_name(), 180, 'FakeTrackSource')
             self.count -= 1
         return track
 
@@ -267,6 +267,29 @@ class Sorter:
             else:
                 self.filling = False
                 self.buffer.sort(reverse=self.reverse, key=lambda tid: tlib.get_attr(tid, self.attr))
+        if len(self.buffer) > 0:
+            return self.buffer.pop(0)
+        else:
+            return None
+
+class CustomSorter:
+    def __init__(self, source, keyfunc, reverse=False, max_size=0):
+        self.name = source.name + ' custom sorted'
+        self.source = source
+        self.keyfunc = keyfunc
+        self.buffer = []
+        self.filling = True
+        self.max_size = max_size
+        self.reverse = reverse
+
+    def next_track(self):
+        while self.filling:    
+            track = self.source.next_track()
+            if track and (self.max_size == 0 or len(self.buffer) < self.max_size):
+                self.buffer.append(track)
+            else:
+                self.filling = False
+                self.buffer.sort(reverse=self.reverse, key=self.keyfunc)
         if len(self.buffer) > 0:
             return self.buffer.pop(0)
         else:

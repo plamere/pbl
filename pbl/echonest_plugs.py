@@ -4,6 +4,7 @@ import pprint
 import pyen
 
 en = pyen.Pyen()
+en.trace=True
 
 _en_song_buckets = [
     'id:spotify', 'audio_summary', 'song_hotttnesss_rank', 'song_hotttnesss',
@@ -12,7 +13,18 @@ _en_song_buckets = [
 ]
 
 class EchoNestPlaylist(object):
+    '''
+        A track source that uses the Echo Nest playlist API to generate tracks
+    '''
     def __init__(self, name, params):
+        '''
+            create an EchoNestPlaylist source.
+
+            :param name: the name of the source
+            :param params: a dictionary of params (see the Echo Nest
+            playlist/static documentation for a full list of available
+            paramaters.
+        '''
         self.name = 'Echo Nest Playlist ' + name
         self.params = params
         self.buffer = None
@@ -25,6 +37,9 @@ class EchoNestPlaylist(object):
             self.params['bucket'].append(bucket)
 
     def next_track(self):
+        '''
+            returns the next track in the stream
+        '''
         if self.buffer == None:
             self.buffer = []
             response = en.get('playlist/static', **self.params)
@@ -40,7 +55,14 @@ class EchoNestPlaylist(object):
 
 
 class EchoNestGenreRadio():
+    '''
+        A genre radio source
+    '''
     def __init__(self, genre, count):
+        '''
+            :param :genre the genre of interest
+            :param :count the number of tracks to generate
+        '''
         params = { 'type': 'genre-radio', 'genre': genre, 'results': count }
         self.enp = EchoNestPlaylist('Genre Radio for ' + genre, params)
         self.name = self.enp.name
@@ -49,14 +71,29 @@ class EchoNestGenreRadio():
         return self.enp.next_track()
 
 class EchoNestHottestSongs():
+    '''
+        Returns the set of hotttest songs from the Echo Nest
+    '''
     def __init__(self, count):
+        '''
+            :param :count the number of tracks to generate
+        '''
         self.name = 'hotttest songs'
 
     def next_track(self):
         pass
 
 class EchoNestArtistRadio():
+    '''
+        A PBL source that generates a stream of tracks that are by
+        the given artist or similar artists
+    '''
     def __init__(self, artist, count):
+        '''
+            :param :artist the name of the artist
+            :param :count the number of tracks to generate
+        '''
+
         params = { 'type': 'artist-radio', 'artist': artist, 'results': count }
         self.enp = EchoNestPlaylist('Artist radio for ' + artist, params)
         self.name = self.enp.name
@@ -65,7 +102,15 @@ class EchoNestArtistRadio():
         return self.enp.next_track()
 
 class EchoNestArtistPlaylist():
+    '''
+        A PBL source that generates a stream of tracks by the given
+        artist
+    '''
     def __init__(self, artist, count):
+        '''
+            :param :artist the name of the artist
+            :param :count the number of tracks to generate
+        '''
         params = { 'type': 'artist', 'artist': artist, 'results': count }
         self.enp = EchoNestPlaylist('Artist playlist for ' + artist, params)
         self.name = self.enp.name
@@ -76,19 +121,23 @@ class EchoNestArtistPlaylist():
 def _annotate_tracks_with_echonest_data(tids):
     stids = set(tids)
     uris = [ 'spotify:track:' + tid for tid in tids]
-    response = en.get('song/profile', track_id=uris, bucket=_en_song_buckets)
-    res = set()
-    for song in response['songs']:
-        for track in song['tracks']:
-            tid = utils.uri_to_id(track['foreign_id'])
-            if tid in stids:
-                res.add(tid)
-                tlib.annotate_track(tid, 'echonest', _flatten_en_song(song, tid))
-
-    diff = stids - res
-    if len(diff) > 0:
+    try:
+        response = en.get('song/profile', track_id=uris, bucket=_en_song_buckets)
+        res = set()
+        for song in response['songs']:
+            for track in song['tracks']:
+                tid = utils.uri_to_id(track['foreign_id'])
+                if tid in stids:
+                    res.add(tid)
+                    tlib.annotate_track(tid, 'echonest', _flatten_en_song(song, tid))
+        diff = stids - res
+        if len(diff) > 0:
+            pass
+            #print 'requested', len(stids), 'collected', len(res)
+    except pyen.PyenException:
+        print 'annotate_tracks_with_echonest_data:no info for', tids
         pass
-        #print 'requested', len(stids), 'collected', len(res)
+
 
 def _flatten_en_song(song, id):
     for k,v in song['audio_summary'].items():

@@ -214,7 +214,7 @@ class TestPBL(unittest.TestCase):
     def test_fake_track_tester(self):
         ''' fake track tester
         '''
-        coffee = FakeTrackGenerator()
+        coffee = FakeTrackSource()
         assert(runner(coffee, 10) == 10)
 
     def test_sp_filter_on_en_tracks(self):

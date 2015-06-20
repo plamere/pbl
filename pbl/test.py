@@ -3,6 +3,7 @@ import engine
 from standard_plugs import *
 from spotify_plugs import *
 from echonest_plugs import *
+#from track_manager import tlib
 from frog import *
 
 uteen_party ='spotify:user:spotify:playlist:3MlpudZs4HT3i0yGPVfmHC'
@@ -202,7 +203,7 @@ def tester23():
 def tester24():
     ''' fake track tester
     '''
-    coffee = FakeTrackGenerator()
+    coffee = FakeTrackSource()
     runner(coffee)
 
 def tester25():
@@ -340,8 +341,13 @@ def tester42():
     ps = LongerThan(AlbumSource('Tarkus'), 30 * 60)
     runner(ps)
 
+def tester43():
+    ''' Sort by title length
+    '''
+    ps = CustomSorter(PlaylistSource('Teen Party'), lambda tid: len(tlib.get_attr(tid, 'title')))
+    runner(ps)
+
 
 if __name__ == '__main__':
-    tester41()
-    tester42()
+    tester43()
     
