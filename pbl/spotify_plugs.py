@@ -1,3 +1,74 @@
+'''
+    A set of sources and annotators for Spotify. An Spotify track has
+    the following attributes::
+
+        {
+            "src": "Teen Party",
+            "artist": "Various Artists",
+            "title": "Walk The Moon - Teen Party Intro",
+            "spotify": {
+                "album": {
+                    "album_type": "album",
+                    "name": "Walk The Moon - Playlist Intros",
+                    "external_urls": {
+                        "spotify": "https://open.spotify.com/album/6ZQf8UHq907D9hu5amANXX"
+                    },
+                    "uri": "spotify:album:6ZQf8UHq907D9hu5amANXX",
+                    "href": "https://api.spotify.com/v1/albums/6ZQf8UHq907D9hu5amANXX",
+                    "images": [
+                        {
+                            "url": "https://i.scdn.co/image/1d06a0a9262a6634ca3a1cf9a9a0855b2245ba81",
+                            "width": 640,
+                            "height": 640
+                        },
+                        {
+                            "url": "https://i.scdn.co/image/2d2dff2f132443083b4368ebead2c71d4dcd7eb7",
+                            "width": 300,
+                            "height": 300
+                        },
+                        {
+                            "url": "https://i.scdn.co/image/c7aa8589b67593d3117020a5a0080598a5997785",
+                            "width": 64,
+                            "height": 64
+                        }
+                    ],
+                    "type": "album",
+                    "id": "6ZQf8UHq907D9hu5amANXX",
+                    "available_markets": [ "AD", "...", ]
+                },
+                "name": "Walk The Moon - Teen Party Intro",
+                "uri": "spotify:track:5oPzMRHjORXQlLemgpfacm",
+                "external_urls": {
+                    "spotify": "https://open.spotify.com/track/5oPzMRHjORXQlLemgpfacm"
+                },
+                "popularity": 5,
+                "explicit": false,
+                "preview_url": "https://p.scdn.co/mp3-preview/5e14b8b02dae9adf80f41fd0d4c03ca17002b939",
+                "track_number": 2,
+                "disc_number": 1,
+                "href": "https://api.spotify.com/v1/tracks/5oPzMRHjORXQlLemgpfacm",
+                "artists": [
+                    {
+                        "name": "Various Artists",
+                        "external_urls": {
+                            "spotify": "https://open.spotify.com/artist/0LyfQWJT6nXafLPZqxe9Of"
+                        },
+                        "uri": "spotify:artist:0LyfQWJT6nXafLPZqxe9Of",
+                        "href": "https://api.spotify.com/v1/artists/0LyfQWJT6nXafLPZqxe9Of",
+                        "type": "artist",
+                        "id": "0LyfQWJT6nXafLPZqxe9Of"
+                    }
+                ],
+                "duration_ms": 7500,
+                "external_ids": {},
+                "type": "track",
+                "id": "5oPzMRHjORXQlLemgpfacm",
+                "available_markets": [ "AD", "AR", "...", ]
+            },
+            "duration": 7,
+            "id": "5oPzMRHjORXQlLemgpfacm"
+        }
+'''
 from track_manager import tlib
 import spotipy
 import spotipy.util
@@ -9,6 +80,17 @@ spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 spotify.trace = False
 
 class PlaylistSource:
+    '''
+        A PBL source that generates a stream of tracks from the given Spotify
+        playlist. If only a name is provided, the playlist will be searched for.
+        Search success can be improved if the owner of the playlist is also
+        provided.
+
+        :param name: the name of the playlist
+        :param uri: the uri of the playlist
+        :param user: the owner of the playlist
+
+    '''
 
     def __init__(self, name, uri=None, user=None):
         self.name = name
@@ -75,6 +157,11 @@ class PlaylistSource:
 
 
 class TrackSource:
+    ''' A PBL Source that generates the a stream of tracks from the given list of
+        URIs
+
+        :param uris: a list of spotify track uris
+    '''
     def __init__(self, uris=[]):
         self.name = 'Tracks '
         self.uris = uris
@@ -94,6 +181,14 @@ class TrackSource:
             return None
 
 class AlbumSource:
+    '''
+        A PBL Source that generates a series of tracks given an album
+
+        :param title: the title of the album
+        :param artist: the artist of the album
+        :param uri: the URI of the album
+    '''
+
     def __init__(self, title=None, artist=None, uri=None):
         self.uri = uri
         self.title = title
@@ -127,6 +222,11 @@ class AlbumSource:
             return None
 
 class ArtistTopTracks:
+    ''' A PBL Source that generates a series of top tracks by the given artist
+
+        :param name: the name of the artist
+        :param uri: the uri of the artist
+    '''
     def __init__(self, name=None, uri=None):
         self.uri = uri
         self.name = 'Top tracks by ' + name
@@ -153,6 +253,14 @@ class ArtistTopTracks:
             return None
 
 class PlaylistSave:
+    ''' A PBL Sink that saves the source stream of tracks to the given playlist
+
+        :param source: the source of tracks to be saved
+        :param playlist_name: the name of the playlist
+        :param user: the owner of the playlist
+        :param uri: the uri of the playlist
+
+    '''
     def __init__(self, source, playlist_name= None, user=None, uri=None, \
         create=False, append=False, max_size=100):
         self.source = source

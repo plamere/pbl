@@ -8,10 +8,10 @@ from pbl import *
 if __name__ == '__main__':
     bad_artists = set(['Various Artists'])
 
-    coffeehouse = ArtistFilter(bad_artists, PlaylistSource('Your Favorite Coffeehouse'))
+    coffeehouse = ArtistFilter(PlaylistSource('Your Favorite Coffeehouse'), bad_artists)
     coffeehouse = Annotator(coffeehouse, 'echonest')
 
-    teen_party = ArtistFilter(bad_artists, PlaylistSource('Teen Party'))
+    teen_party = ArtistFilter(PlaylistSource('Teen Party'), bad_artists)
     teen_party = Annotator(teen_party, 'echonest')
 
     both = Alternate([Last(Sorter(coffeehouse, 'echonest.energy'), 8),

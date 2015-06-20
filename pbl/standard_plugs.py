@@ -1,9 +1,16 @@
+''' A set of standard sources, filters, sorters and sinks
+'''
 import random
 import datetime
 from track_manager import tlib
 import simplejson as json
 
 class Annotator:
+    ''' Annotates the tracks in a stream with external information
+
+        :param source: the source of tracks
+        :param type: the type of annotation (spotify, echonest)
+    '''
     def __init__(self, source, type):
         self.annotator = tlib.get_annotator(type)
         self.name = source.name + ' annotated with ' + type +  ' data'
@@ -34,6 +41,12 @@ class Annotator:
         self.fillbuf = []
 
 class FakeTrackSource:
+    '''
+        Generates a series of fake tracks, suitable for testing
+
+        param: count: the number of tracks to generate
+
+    '''
     def __init__(self, count=10):
         self.name = 'FakeTracks'
         self.count = count
@@ -62,6 +75,13 @@ class FakeTrackSource:
 
 
 class Split:
+    '''
+        Splits a stream into two streams
+
+        :param source: the source of the track stream
+        :param split_index: the index where the split occurs
+    '''
+
     def __init__(self, source, split_index):
         self.source = source
         self.split_index = split_index
@@ -115,6 +135,14 @@ class Split:
 
 
 class Looper:
+    '''
+        Given a source, generate a stream of a given size by circulating through
+        the tracks in the source
+
+        :param source: the stream source
+        :param max_size: the number of tracks returned
+
+    '''
     def __init__(self, source, max_size=200):
         self.name = 'looped ' + source.name
         self.source = source
@@ -146,6 +174,11 @@ class Looper:
         return track
 
 class Shuffler:
+    ''' Shuffles the tracks in the stream
+
+        :param source: the source of tracks
+        :param max_size: the maximum number of tracks to return
+    '''
     def __init__(self, source, max_size=0):
         self.name = 'shuffled ' + source.name
         self.source = source
@@ -167,6 +200,14 @@ class Shuffler:
             return None
 
 class DeDup:
+    '''
+        Remove any duplicate tracks in the stream
+
+        :param source: the stream source
+        :param by_name: if True match by track ID and name
+
+    '''
+
     def __init__(self, source, by_name = False):
         self.name = 'dedupped ' + source.name
         self.source = source
@@ -193,6 +234,12 @@ class DeDup:
         return track
 
 class Buffer:
+    '''
+        Buffer up the given number of tracks
+
+        :param source: the stream source
+        :param max_size: the size of the buffer
+    '''
     def __init__(self, source, max_size=40):
         self.name = 'buffered ' + source.name
         self.source = source
@@ -214,6 +261,13 @@ class Buffer:
             return None
 
 class LongerThan:
+    '''
+        Limit the stream, if possible, to tracks with a duration that is longer
+        than the given time
+
+        :param source: the source stream
+        :param time: the time in seconds
+    '''
     def __init__(self, source, time=1200):
         self.name = 'LongerThan ' + str(time) + ' secs'
         self.source = source
@@ -231,6 +285,13 @@ class LongerThan:
             return track
 
 class ShorterThan:
+    '''
+        Limit the stream, if possible, to tracks with a duration that is just
+        shorter than the given time
+
+        :param source: the source stream
+        :param time: the time in seconds
+    '''
     def __init__(self, source, time=1200):
         self.name = 'Shorter Than ' + str(time) + ' secs'
         self.source = source
@@ -250,6 +311,15 @@ class ShorterThan:
             return track
 
 class Sorter:
+    '''
+        Sorts the tracks in the given stream by the given attribute
+
+        :param source: the source of the tracks
+        :param attr: the attribute to be sorted
+        :param reverse: if True reverse the sort
+        :param max_size: maximum tracks to sort
+    '''
+        
     def __init__(self, source, attr, reverse=False, max_size=0):
         self.name = source.name + ' sorted by ' + attr + ('(reverse)' if reverse else '')
         self.source = source
@@ -273,6 +343,14 @@ class Sorter:
             return None
 
 class CustomSorter:
+    '''
+        Sorts the tracks by a custom key
+
+        :param source: the source of the tracks
+        :param keyfunc: function that turns a track id into the sort key
+        :param reverse: if True reverse the sort
+        :param max_size: maximum tracks to sort
+    '''
     def __init__(self, source, keyfunc, reverse=False, max_size=0):
         self.name = source.name + ' custom sorted'
         self.source = source
@@ -296,6 +374,12 @@ class CustomSorter:
             return None
 
 class First:
+    '''
+        Returns the first tracks from a stream
+
+        :param source: the source of tracks
+        :param sample_size: the number of tracks to return
+    '''
     def __init__(self, source, sample_size=10):
         self.name = 'first ' + str(sample_size) + ' of ' + source.name
         self.source = source
@@ -320,6 +404,12 @@ class First:
             return None
 
 class Last:
+    '''
+        Returns the last tracks from a stream
+
+        :param source: the source of tracks
+        :param sample_size: the number of tracks to return
+    '''
     def __init__(self, source, sample_size=10):
         self.name = 'last ' + str(sample_size) + ' of ' + source.name
         self.source = source
@@ -342,6 +432,11 @@ class Last:
             return None
 
 class Reverse:
+    '''
+        Reverses the order of the tracks in the stream
+
+        :param source: the source of tracks
+    '''
     def __init__(self, source):
         self.name = 'reverse of ' + source.name
         self.source = source
@@ -362,6 +457,12 @@ class Reverse:
             return None
 
 class Sample:
+    '''
+        Randomly sample tracks from the stream
+
+        :param source: the source of tracks
+        :param sample_size: the number of tracks to return
+    '''
     def __init__(self, source, sample_size=10):
         self.name = 'Sampling ' + str(sample_size) \
             + ' tracks from ' + source.name
@@ -386,6 +487,12 @@ class Sample:
             return None
 
 class Concatenate:
+    '''
+        Concatenate multiple streams
+
+        :param source: the source of tracks
+        :param source_list: a list of sources
+    '''
     def __init__(self, source_list):
         self.name = 'concatenating ' + ' '.join([s.name for s in source_list])
         self.source_list = source_list
@@ -402,6 +509,12 @@ class Concatenate:
         return track
 
 class Alternate:
+    '''
+        Alternate tracks from  multiple streams
+
+        :param source: the source of tracks
+        :param source_list: a list of sources
+    '''
     def __init__(self, source_list):
         self.name = 'alternating between ' + ', '.join([s.name for s in source_list])
         self.source_list = source_list
@@ -420,6 +533,14 @@ class Alternate:
         return None
 
 class Conditional:
+    '''
+        Alternate tracks from  two streams based on a conditional
+
+        :param source: the source of tracks
+        :param cond_func: a function that returns a boolean
+        :param trueSource: source of tracks when conf_func returns True
+        :param falseSource: source of tracks when conf_func returns False
+    '''
     def __init__(self, cond_func, trueSource, falseSource):
         self.name = 'Conditional of ' + ' '.join([trueSource.name, falseSource.name])
         self.trueSource = trueSource
@@ -433,7 +554,12 @@ class Conditional:
             return self.falseSource.next_track()
 
 class Case:
-    ''' maps func values to source map
+    '''
+        Selects tracks from streams based upon a mapping function
+
+        :param source: the source of tracks
+        :param func: a function that returns the source_map key
+        :param source_map: a may of key to source streams
     '''
 
     def __init__(self, func, source_map):
@@ -460,13 +586,17 @@ class Case:
 
 def is_day_of_week(day_of_week):
     ''' checks if cur day is given day of the week
-        Monday is 0 and Sunday is 6.
+
+        :param day_of_week: Monday is 0 and Sunday is 6.
     '''
     def cond_func():
         return datetime.datetime.today().weekday() == day_of_week
     return  cond_func
 
 def get_simple_day_part():
+    '''
+        returns the daypart
+    '''
     hour = datetime.datetime.today().hour
     if hour < 12:
         return 'morning'
@@ -479,6 +609,15 @@ def get_simple_day_part():
 
 
 class AttributeRangeFilter:
+    '''
+        Filters tracks based upon range check of an attribute
+
+        :param source: the source of tracks
+        :param attr: the attribute of interest
+        :param match: if not None, attribute value must match this exactly
+        :param min_val: if not None, attribute value must be at least this
+        :param max_val: if not None, attribute value must be no more than this
+    '''
     def __init__(self, source, attr, match=None,min_val=None,max_val=None):
         self.name = source.name + ' filtered by ' + attr
         self.source = source
@@ -509,6 +648,12 @@ class AttributeRangeFilter:
 
 
 class TrackFilter:
+    '''
+        Removes tracks from the stream based on a second stream
+
+        :param source: the source of tracks
+        :param filter: the stream of bad tracks to be removed
+    '''
     def __init__(self, source, filter):
         self.name = source.name + ' filtered by ' + filter.name
         self.source = source
@@ -539,7 +684,13 @@ class TrackFilter:
         return track
 
 class ArtistFilter:
-    def __init__(self, artistNames, source):
+    '''
+        Removes tracks from the stream that have the given artists
+
+        :param source: the source of tracks
+        :param artistNames: the names of the artists to be removed
+    '''
+    def __init__(self, source, artistNames):
         self.name = source.name + ' with songs by ' + ', '.join(artistNames) + ' removed'
         self.source = source
         self.bad_artists = set(artistNames)
@@ -561,6 +712,13 @@ class ArtistFilter:
         return track
 
 class Dumper:
+    '''
+        Dumps tracks to the terminal
+
+        :param source: the source of tracks
+        :param props: list of property names to be included in the dump
+    '''
+        
     def __init__(self, source, props):
         self.name = 'dumper'
         self.source = source
@@ -580,6 +738,13 @@ class Dumper:
         return track
 
 class Debugger:
+    '''
+        Shows details on each track in the stream
+
+        :param source: the source of tracks
+    '''
+
+
     def __init__(self, source):
         self.name = 'dumper'
         self.source = source
@@ -593,6 +758,12 @@ class Debugger:
         return track
 
 class SaveToJson:
+    '''
+        Saves the stream to json
+        :param source: the source of tracks
+        :param name: the name of the json file
+        :param max_size: the max tracks to save
+    '''
     def __init__(self, source, name='playlist.json', max_size=100):
         self.name = 'SaveToJson ' + name
         self.source = source

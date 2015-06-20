@@ -1,4 +1,6 @@
 class TrackLibrary:
+    ''' manages track attributes
+    '''
     
     def __init__(self):
         self.tmap = { }
@@ -6,6 +8,12 @@ class TrackLibrary:
         self.missing_annotator_reported = False
 
     def add_track(self, source_name, tid, info):
+        ''' Adds a track to the library
+
+            :param source_name: the name of the track source
+            :param tid: the track id
+            :param info: the track info
+        '''
         info['src'] = source_name
         self.tmap[tid] = info
 
@@ -16,6 +24,10 @@ class TrackLibrary:
         return self.annotators[name]
 
     def get_track(self, tid):
+        ''' gets the track info
+
+            :param tid: the track id
+        '''
         return self.tmap[tid]
 
     def get_tn(self, tid):
@@ -44,6 +56,13 @@ class TrackLibrary:
             print "can't annotate missing track", tid
 
     def get_attr(self, tid, attr):
+        '''
+            Gets the value of the given attribute for a track
+
+            :param tid: the track id
+            :param attr: the attribte name
+
+        '''
         # currently support 'attribute' or 'pkg.attribute'
         track = self.get_track(tid)
         if track:
