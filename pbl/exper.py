@@ -2,7 +2,7 @@ import spotipy
 import random
 import pyen
 import pprint
-import simplejson as json
+import json
 from spotipy.oauth2 import SpotifyClientCredentials
 
 

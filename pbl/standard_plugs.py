@@ -3,7 +3,7 @@
 import random
 import datetime
 from track_manager import tlib
-import simplejson as json
+import json
 
 class Annotator:
     ''' Annotates the tracks in a stream with external information
