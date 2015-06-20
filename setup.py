@@ -10,5 +10,6 @@ setup(
     install_requires=['requests>=2.5'],
     install_requires=['pyen>=2.3'],
     install_requires=['spotipy>=2.0'],
+    install_requires=['simplejson>=3.6'],
     license='LICENSE.txt',
     packages=['pbl'])
