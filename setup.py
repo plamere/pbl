@@ -11,4 +11,4 @@ setup(
     install_requires=['pyen>=2.3'],
     install_requires=['spotipy>=2.0'],
     license='LICENSE.txt',
-    packages=['spotipy'])
+    packages=['pbl'])
