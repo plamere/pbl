@@ -76,8 +76,11 @@ import pprint
 
 
 from spotipy.oauth2 import SpotifyClientCredentials
-spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-spotify.trace = False
+
+spotify = None
+auth_sp = None
+
+
 
 class PlaylistSource:
     '''
@@ -106,14 +109,14 @@ class PlaylistSource:
 
 
     def _get_uri_from_name(self, name):
-        results = spotify.search(q=name, type='playlist')
+        results = _get_spotify().search(q=name, type='playlist')
         if len(results['playlists']['items']) > 0:
             return results['playlists']['items'][0]['uri']
         else:
             return None
 
     def _get_uri_from_name_and_user(self, name, user):
-        results = spotify.user_playlists(user)
+        results = _get_spotify().user_playlists(user)
         while results:
             #pprint.pprint(results)
             #print
@@ -121,14 +124,14 @@ class PlaylistSource:
                 if playlist['name'] == name:
                     return playlist['uri']
             if results['next']:
-                results = spotify.next(results)
+                results = _get_spotify().next(results)
             else:
                 results = None
         return None
 
     def _get_more_tracks(self):
         _,_,user,_,playlist_id = self.uri.split(':')
-        results = spotify.user_playlist_tracks(user, playlist_id, 
+        results = _get_spotify().user_playlist_tracks(user, playlist_id, 
             limit=self.limit, offset=self.next_offset)
 
         self.total = results['total']
@@ -170,7 +173,7 @@ class TrackSource:
     def next_track(self):
         if self.buffer == None:
             self.buffer = []
-            results = spotify.tracks(self.uris)
+            results = _get_spotify().tracks(self.uris)
             for track in results['tracks']:
                 self.buffer.append(track['id'])
                 _add_track(self.name, track)
@@ -197,7 +200,7 @@ class AlbumSource:
         self.buffer = None
 
     def _get_uri_from_artist_title(self, artist, title):
-        results = spotify.search(q=title + ' ' + (artist if artist else ''), type='album')
+        results = _get_spotify().search(q=title + ' ' + (artist if artist else ''), type='album')
         if len(results['albums']['items']) > 0:
             return results['albums']['items'][0]['uri']
         else:
@@ -211,7 +214,7 @@ class AlbumSource:
             self.buffer = []
             if self.uri:
                 _,_,id = self.uri.split(':')
-                results = spotify.album_tracks(id)
+                results = _get_spotify().album_tracks(id)
                 for track in results['items']:
                     self.buffer.append(track['id'])
                     _add_track(self.name, track)
@@ -238,11 +241,11 @@ class ArtistTopTracks:
             self.buffer = []
 
             if self.uri == None:
-                self.uri = _find_artist_by_name(spotify, self.artist_name)
+                self.uri = _find_artist_by_name(_get_spotify(), self.artist_name)
 
             if self.uri != None:
                 _,_,id = self.uri.split(':')
-                results = spotify.artist_top_tracks(id)
+                results = _get_spotify().artist_top_tracks(id)
                 for track in results['tracks']:
                     self.buffer.append(track['id'])
                     _add_track(self.name, track)
@@ -319,7 +322,12 @@ class PlaylistSave:
         else:
             print "Can't get authenticated access to spotify"
 
-auth_sp = None
+def _get_spotify():
+    global spotify
+    if spotify == None:
+        spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+        spotify.trace = False
+    return spotify
 
 def _get_auth_spotify(user):
     global auth_sp
@@ -342,7 +350,7 @@ def _find_playlist_by_name(sp, user, name):
     return None
 
 def _find_artist_by_name(sp, name):
-    results = spotify.search(q=name, type='artist')
+    results = _get_spotify().search(q=name, type='artist')
     if len(results['artists']['items']) > 0:
         return results['artists']['items'][0]['uri']
     else:
@@ -350,7 +358,7 @@ def _find_artist_by_name(sp, name):
     
 
 def _annotate_tracks_with_spotify_data(tids):
-    results = spotify.tracks(tids)
+    results = _get_spotify().tracks(tids)
     for track in results['tracks']:
         tlib.annotate_track(track['id'], 'spotify', track)
 

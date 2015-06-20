@@ -46,8 +46,7 @@ import utils
 import pprint
 import pyen
 
-en = pyen.Pyen()
-en.trace=True
+en = None
 
 _en_song_buckets = [
     'id:spotify', 'audio_summary', 'song_hotttnesss_rank', 'song_hotttnesss',
@@ -84,7 +83,7 @@ class EchoNestPlaylist(object):
         '''
         if self.buffer == None:
             self.buffer = []
-            response = en.get('playlist/static', **self.params)
+            response = _get_en().get('playlist/static', **self.params)
             for song in response['songs']:
                 id = _add_song(self.name, song)
                 self.buffer.append(id)
@@ -161,7 +160,7 @@ def _annotate_tracks_with_echonest_data(tids):
     stids = set(tids)
     uris = [ 'spotify:track:' + tid for tid in tids]
     try:
-        response = en.get('song/profile', track_id=uris, bucket=_en_song_buckets)
+        response = _get_en().get('song/profile', track_id=uris, bucket=_en_song_buckets)
         res = set()
         for song in response['songs']:
             for track in song['tracks']:
@@ -216,5 +215,12 @@ _echonest_annotator = {
     'annotator': _annotate_tracks_with_echonest_data,
     'batch_size': 50
 }
+
+def _get_en():
+    global en
+    if en == None:
+        en = pyen.Pyen()
+        en.trace = False
+    return en
 
 tlib.add_annotator(_echonest_annotator)
