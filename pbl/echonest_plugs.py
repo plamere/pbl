@@ -47,6 +47,7 @@ import pprint
 import pyen
 
 en = None
+debug = False
 
 _en_song_buckets = [
     'id:spotify', 'audio_summary', 'song_hotttnesss_rank', 'song_hotttnesss',
@@ -157,25 +158,31 @@ class EchoNestArtistPlaylist():
         return self.enp.next_track()
 
 def _annotate_tracks_with_echonest_data(tids):
-    stids = set(tids)
-    uris = [ 'spotify:track:' + tid for tid in tids]
-    try:
-        response = _get_en().get('song/profile', track_id=uris, bucket=_en_song_buckets)
-        res = set()
-        for song in response['songs']:
-            for track in song['tracks']:
-                tid = utils.uri_to_id(track['foreign_id'])
-                if tid in stids:
-                    res.add(tid)
-                    tlib.annotate_track(tid, 'echonest', _flatten_en_song(song, tid))
-        diff = stids - res
-        if len(diff) > 0:
-            pass
-            #print 'requested', len(stids), 'collected', len(res)
-    except pyen.PyenException:
-        print 'annotate_tracks_with_echonest_data:no info for', tids
-        pass
-
+    otids = tlib.annotate_tracks_from_cache('echonest', tids)
+    if len(otids) > 0:
+        stids = set(otids)
+        uris = [ 'spotify:track:' + tid for tid in otids]
+        try:
+            if debug:
+                print 'getting echonest info for', otids
+            response = _get_en().get('song/profile', track_id=uris, bucket=_en_song_buckets)
+            res = set()
+            for song in response['songs']:
+                for track in song['tracks']:
+                    tid = utils.uri_to_id(track['foreign_id'])
+                    if tid in stids:
+                        res.add(tid)
+                        tlib.annotate_track(tid, 'echonest', _flatten_en_song(song, tid))
+            diff = stids - res
+            if len(diff) > 0:
+                pass
+                #print 'requested', len(stids), 'collected', len(res)
+        except pyen.PyenException as e:
+            print 'annotate_tracks_with_echonest_data:no info for', otids
+            print 'echonest error', e.http_status, e.code, e.msg
+            for tid in otids:
+                tlib.annotate_track(tid, 'echonest', {'empty': 'empty'})
+    
 
 def _flatten_en_song(song, id):
     for k,v in song['audio_summary'].items():

@@ -355,12 +355,14 @@ def _find_artist_by_name(sp, name):
         return results['artists']['items'][0]['uri']
     else:
         return None
-    
 
 def _annotate_tracks_with_spotify_data(tids):
-    results = _get_spotify().tracks(tids)
-    for track in results['tracks']:
-        tlib.annotate_track(track['id'], 'spotify', track)
+    tids = tlib.annotate_tracks_from_cache('spotify', tids)
+    if len(tids) > 0:
+        print 'annotate tracks with spotify', tids
+        results = _get_spotify().tracks(tids)
+        for track in results['tracks']:
+            tlib.annotate_track(track['id'], 'spotify', track)
 
 def _add_track(source, track):
     dur = int(track['duration_ms'] / 1000.)

@@ -512,7 +512,6 @@ class Alternate:
     '''
         Alternate tracks from  multiple streams
 
-        :param source: the source of tracks
         :param source_list: a list of sources
     '''
     def __init__(self, source_list):

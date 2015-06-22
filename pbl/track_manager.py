@@ -1,3 +1,11 @@
+
+import os
+
+if os.environ.get('PBL_NO_CACHE'):
+    import nocache as cache
+else:
+    import cache
+
 class TrackLibrary:
     ''' manages track attributes
     '''
@@ -16,6 +24,17 @@ class TrackLibrary:
         '''
         info['src'] = source_name
         self.tmap[tid] = info
+
+
+    def annotate_tracks_from_cache(self, type, tids):
+        out = []
+        for tid in tids:
+            song = cache.get(type, tid)
+            if song:
+                self.annotate_track(tid, type, song, add_to_cache=False)
+            else:
+                out.append(tid)
+        return out
 
     def add_annotator(self, annotator):
         self.annotators[annotator['name']] = annotator
@@ -48,10 +67,12 @@ class TrackLibrary:
         self.tmap[id] = track
         return id
 
-    def annotate_track(self, tid, name, data):
+    def annotate_track(self, tid, name, data, add_to_cache=True):
         track = self.get_track(tid)
         if track:
             track[name] = data
+            if add_to_cache and cache.get(name, tid) == None:
+                cache.put(name, tid, data)
         else:
             print "can't annotate missing track", tid
 
@@ -81,7 +102,7 @@ class TrackLibrary:
                     self.annotators[type]['annotator']([tid])
                 if type in track:
                     type_info = track[type]
-                    if attr in type_info:
+                    if type_info and attr in type_info:
                         return type_info[attr]
             else:
                 print 'bad attr path', attr
