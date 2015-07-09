@@ -218,17 +218,20 @@ class DeDup:
         track = None
         while True:
             track = self.source.next_track()
-            if self.by_name:
-                tname = tlib.get_tn(track).lower()
-                if tname in self.history:
+            if track:
+                if self.by_name:
+                    tname = tlib.get_tn(track).lower()
+                    if tname in self.history:
+                        continue
+                    else:
+                        self.history.add(tname)
+
+                if track in self.history:
                     continue
                 else:
-                    self.history.add(tname)
-
-            if track in self.history:
-                continue
+                    self.history.add(track)
+                    break
             else:
-                self.history.add(track)
                 break
 
         return track
@@ -490,7 +493,6 @@ class Concatenate:
     '''
         Concatenate multiple streams
 
-        :param source: the source of tracks
         :param source_list: a list of sources
     '''
     def __init__(self, source_list):
@@ -514,10 +516,11 @@ class Alternate:
 
         :param source_list: a list of sources
     '''
-    def __init__(self, source_list):
+    def __init__(self, source_list, fail_fast=False):
         self.name = 'alternating between ' + ', '.join([s.name for s in source_list])
         self.source_list = source_list
         self.index = 0
+        self.fail_fast
 
     def next_track(self):
         tries = len(self.source_list)
@@ -528,7 +531,10 @@ class Alternate:
             if track:
                 return track
             else:
-                tries -= 1
+                if fail_fast:
+                    break
+                else: 
+                    tries -= 1
         return None
 
 class Conditional:

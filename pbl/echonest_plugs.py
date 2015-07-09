@@ -14,7 +14,6 @@
                 "speechiness": 0.035816,
                 "duration": 255.37288,
                 "id": "SOZKJDU1461E3C9B6E",
-                "song_currency_rank": 41583,
                 "title": "Perfect Situation",
                 "acousticness": 0.03422,
                 "danceability": 0.452168,
@@ -32,7 +31,6 @@
                 "album_date": "2005-05-09",
                 "liveness": 0.135915,
                 "artist_hotttnesss": 0.72962,
-                "song_hotttnesss_rank": 22386,
                 "mode": 1,
                 "time_signature": 4,
                 "loudness": -4.131,
@@ -50,8 +48,8 @@ en = None
 debug = False
 
 _en_song_buckets = [
-    'id:spotify', 'audio_summary', 'song_hotttnesss_rank', 'song_hotttnesss',
-    'song_currency_rank', 'song_currency', 'artist_hotttnesss', 'tracks',
+    'id:spotify', 'audio_summary', 'song_hotttnesss',
+    'song_currency', 'artist_hotttnesss', 'tracks',
     'artist_familiarity', 'artist_discovery'
 ]
 
@@ -106,7 +104,7 @@ class EchoNestGenreRadio():
     def __init__(self, genre, count):
         '''
         '''
-        params = { 'type': 'genre-radio', 'genre': genre, 'results': count }
+        params = { 'type': 'genre-radio', 'genre': genre, 'results': int(count) }
         self.enp = EchoNestPlaylist('Genre Radio for ' + genre, params)
         self.name = self.enp.name
 
@@ -134,7 +132,7 @@ class EchoNestArtistRadio():
         :param count: the number of tracks to generate
     '''
     def __init__(self, artist, count):
-        params = { 'type': 'artist-radio', 'artist': artist, 'results': count }
+        params = { 'type': 'artist-radio', 'artist': artist, 'results': int(count) }
         self.enp = EchoNestPlaylist('Artist radio for ' + artist, params)
         self.name = self.enp.name
 
@@ -150,7 +148,7 @@ class EchoNestArtistPlaylist():
         :param count: the number of tracks to generate
     '''
     def __init__(self, artist, count):
-        params = { 'type': 'artist', 'artist': artist, 'results': count }
+        params = { 'type': 'artist', 'artist': artist, 'results': int(count) }
         self.enp = EchoNestPlaylist('Artist playlist for ' + artist, params)
         self.name = self.enp.name
 
