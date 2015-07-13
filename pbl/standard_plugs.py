@@ -5,7 +5,7 @@ import datetime
 from track_manager import tlib
 import json
 
-class Annotator:
+class Annotator(object):
     ''' Annotates the tracks in a stream with external information
 
         :param source: the source of tracks
@@ -40,7 +40,7 @@ class Annotator:
         self.annotator['annotator'](self.fillbuf)
         self.fillbuf = []
 
-class FakeTrackSource:
+class FakeTrackSource(object):
     '''
         Generates a series of fake tracks, suitable for testing
 
@@ -74,7 +74,7 @@ class FakeTrackSource:
         return ' '.join([adj, noun])
 
 
-class Split:
+class Split(object):
     '''
         Splits a stream into two streams
 
@@ -104,7 +104,7 @@ class Split:
                     break
                 which += 1
 
-    class left_side:
+    class left_side(object):
         def __init__(self, outer):
             self.outer = outer
             self.name = 'first ' + str(outer.split_index) \
@@ -117,7 +117,7 @@ class Split:
             else:
                 return None
 
-    class right_side:
+    class right_side(object):
         def __init__(self, outer):
             self.outer = outer
             self.name = 'After the first ' + str(outer.split_index) \
@@ -134,7 +134,7 @@ class Split:
         return [self.left_side(self), self.right_side(self)]
 
 
-class Looper:
+class Looper(object):
     '''
         Given a source, generate a stream of a given size by circulating through
         the tracks in the source
@@ -173,7 +173,7 @@ class Looper:
         self.cur_size += 1
         return track
 
-class Shuffler:
+class Shuffler(object):
     ''' Shuffles the tracks in the stream
 
         :param source: the source of tracks
@@ -199,7 +199,7 @@ class Shuffler:
         else:
             return None
 
-class DeDup:
+class DeDup(object):
     '''
         Remove any duplicate tracks in the stream
 
@@ -236,7 +236,7 @@ class DeDup:
 
         return track
 
-class Buffer:
+class Buffer(object):
     '''
         Buffer up the given number of tracks
 
@@ -263,7 +263,7 @@ class Buffer:
         else:
             return None
 
-class LongerThan:
+class LongerThan(object):
     '''
         Limit the stream, if possible, to tracks with a duration that is longer
         than the given time
@@ -287,7 +287,7 @@ class LongerThan:
                 self.cur_time += duration
             return track
 
-class ShorterThan:
+class ShorterThan(object):
     '''
         Limit the stream, if possible, to tracks with a duration that is just
         shorter than the given time
@@ -313,7 +313,7 @@ class ShorterThan:
                     return None
             return track
 
-class Sorter:
+class Sorter(object):
     '''
         Sorts the tracks in the given stream by the given attribute
 
@@ -345,7 +345,7 @@ class Sorter:
         else:
             return None
 
-class CustomSorter:
+class CustomSorter(object):
     '''
         Sorts the tracks by a custom key
 
@@ -376,7 +376,7 @@ class CustomSorter:
         else:
             return None
 
-class First:
+class First(object):
     '''
         Returns the first tracks from a stream
 
@@ -406,7 +406,7 @@ class First:
         else:
             return None
 
-class Last:
+class Last(object):
     '''
         Returns the last tracks from a stream
 
@@ -434,7 +434,7 @@ class Last:
         else:
             return None
 
-class Reverse:
+class Reverse(object):
     '''
         Reverses the order of the tracks in the stream
 
@@ -459,7 +459,7 @@ class Reverse:
         else:
             return None
 
-class Sample:
+class Sample(object):
     '''
         Randomly sample tracks from the stream
 
@@ -489,7 +489,7 @@ class Sample:
         else:
             return None
 
-class Concatenate:
+class Concatenate(object):
     '''
         Concatenate multiple streams
 
@@ -510,7 +510,7 @@ class Concatenate:
                 self.index += 1
         return track
 
-class Alternate:
+class Alternate(object):
     '''
         Alternate tracks from  multiple streams
 
@@ -520,7 +520,7 @@ class Alternate:
         self.name = 'alternating between ' + ', '.join([s.name for s in source_list])
         self.source_list = source_list
         self.index = 0
-        self.fail_fast
+        self.fail_fast = fail_fast
 
     def next_track(self):
         tries = len(self.source_list)
@@ -531,13 +531,13 @@ class Alternate:
             if track:
                 return track
             else:
-                if fail_fast:
+                if self.fail_fast:
                     break
                 else: 
                     tries -= 1
         return None
 
-class Conditional:
+class Conditional(object):
     '''
         Alternate tracks from  two streams based on a conditional
 
@@ -558,7 +558,7 @@ class Conditional:
         else:
             return self.falseSource.next_track()
 
-class Case:
+class Case(object):
     '''
         Selects tracks from streams based upon a mapping function
 
@@ -613,7 +613,7 @@ def get_simple_day_part():
         return 'night'
 
 
-class AttributeRangeFilter:
+class AttributeRangeFilter(object):
     '''
         Filters tracks based upon range check of an attribute
 
@@ -652,7 +652,7 @@ class AttributeRangeFilter:
         return track
 
 
-class TrackFilter:
+class TrackFilter(object):
     '''
         Removes tracks from the stream based on a second stream
 
@@ -688,7 +688,7 @@ class TrackFilter:
                 break
         return track
 
-class ArtistFilter:
+class ArtistFilter(object):
     '''
         Removes tracks from the stream that have the given artists
 
@@ -716,7 +716,7 @@ class ArtistFilter:
                 break
         return track
 
-class Dumper:
+class Dumper(object):
     '''
         Dumps tracks to the terminal
 
@@ -742,7 +742,7 @@ class Dumper:
             self.which += 1
         return track
 
-class Debugger:
+class Debugger(object):
     '''
         Shows details on each track in the stream
 
@@ -762,7 +762,7 @@ class Debugger:
             print
         return track
 
-class SaveToJson:
+class SaveToJson(object):
     '''
         Saves the stream to json
         :param source: the source of tracks

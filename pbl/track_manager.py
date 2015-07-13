@@ -6,7 +6,7 @@ if os.environ.get('PBL_NO_CACHE'):
 else:
     import cache
 
-class TrackLibrary:
+class TrackLibrary(object):
     ''' manages track attributes
     '''
     

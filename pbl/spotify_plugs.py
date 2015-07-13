@@ -70,6 +70,7 @@
         }
 '''
 from track_manager import tlib
+from engine import PBLException
 import spotipy
 import spotipy.util
 import pprint
@@ -82,7 +83,7 @@ auth_sp = None
 
 
 
-class PlaylistSource:
+class PlaylistSource(object):
     '''
         A PBL source that generates a stream of tracks from the given Spotify
         playlist. If only a name is provided, the playlist will be searched for.
@@ -148,6 +149,12 @@ class PlaylistSource:
             else:
                 self.uri = self._get_uri_from_name(self.name)
 
+            if not self.uri:
+                msg = "Can't find playlist named " + self.name
+                if self.user:
+                    msg += ' for user ' + self.user
+                raise PBLException(self, msg)
+
         if self.uri and self.cur_index >= len(self.tracks) and len(self.tracks) < self.total:
             self._get_more_tracks()
 
@@ -159,7 +166,7 @@ class PlaylistSource:
             return None
 
 
-class TrackSource:
+class TrackSource(object):
     ''' A PBL Source that generates the a stream of tracks from the given list of
         URIs
 
@@ -183,7 +190,7 @@ class TrackSource:
         else:
             return None
 
-class AlbumSource:
+class AlbumSource(object):
     '''
         A PBL Source that generates a series of tracks given an album
 
@@ -224,7 +231,7 @@ class AlbumSource:
         else:
             return None
 
-class ArtistTopTracks:
+class ArtistTopTracks(object):
     ''' A PBL Source that generates a series of top tracks by the given artist
 
         :param name: the name of the artist
@@ -249,13 +256,15 @@ class ArtistTopTracks:
                 for track in results['tracks']:
                     self.buffer.append(track['id'])
                     _add_track(self.name, track)
+            else:
+                raise PBLException(self, "Can't find that artist")
 
         if len(self.buffer) > 0:
             return self.buffer.pop(0)
         else:
             return None
 
-class PlaylistSave:
+class PlaylistSave(object):
     ''' A PBL Sink that saves the source stream of tracks to the given playlist
 
         :param source: the source of tracks to be saved

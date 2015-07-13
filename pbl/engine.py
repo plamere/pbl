@@ -50,6 +50,23 @@ def show_source(source, ntracks = 100, props=[]):
     print
     print source.name
     pipeline = standard_plugs.Dumper(source, props)
-    run_source(pipeline, ntracks)
+    try:
+        run_source(pipeline, ntracks)
+    except PBLException as e:
+        print e
     print
 
+
+class PBLException(Exception):
+    def __init__(self, component, reason, cname=''):
+        self.component = component
+        self.reason = reason
+        self.cname = cname
+        print 'PBLException', component, reason, cname
+
+    def __str__(self):
+        if self.component:
+            name = self.component.__class__.__name__ + ': "' + self.component.name + '"'
+        else:
+            name = self.cname
+        return 'PBLException:' + name + '- ' + self.reason

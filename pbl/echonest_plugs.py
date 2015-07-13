@@ -40,6 +40,7 @@
 '''
 
 from track_manager import tlib
+from engine import PBLException
 import utils
 import pprint
 import pyen
@@ -82,7 +83,11 @@ class EchoNestPlaylist(object):
         '''
         if self.buffer == None:
             self.buffer = []
-            response = _get_en().get('playlist/static', **self.params)
+            try:
+                response = _get_en().get('playlist/static', **self.params)
+            except pyen.PyenException as e:
+                raise PBLException(self, e.msg)
+
             for song in response['songs']:
                 id = _add_song(self.name, song)
                 self.buffer.append(id)
@@ -93,8 +98,7 @@ class EchoNestPlaylist(object):
         else:
             return None
 
-
-class EchoNestGenreRadio():
+class EchoNestGenreRadio(EchoNestPlaylist):
     '''
         A genre radio track source
 
@@ -104,14 +108,11 @@ class EchoNestGenreRadio():
     def __init__(self, genre, count):
         '''
         '''
-        params = { 'type': 'genre-radio', 'genre': genre, 'results': int(count) }
-        self.enp = EchoNestPlaylist('Genre Radio for ' + genre, params)
-        self.name = self.enp.name
+        params = { 'type': 'genre-radio', 'genre': genre.lower(), 'results': int(count) }
+        super(EchoNestGenreRadio, self).__init__('Genre radio for ' + genre, params)
 
-    def next_track(self):
-        return self.enp.next_track()
 
-class EchoNestHottestSongs():
+class EchoNestHottestSongs(object):
     '''
         Returns the set of hotttest songs from the Echo Nest. TBD
         :param count: the number of tracks to generate
@@ -123,7 +124,7 @@ class EchoNestHottestSongs():
     def next_track(self):
         pass
 
-class EchoNestArtistRadio():
+class EchoNestArtistRadio(EchoNestPlaylist):
     '''
         A PBL source that generates a stream of tracks that are by
         the given artist or similar artists
@@ -133,13 +134,9 @@ class EchoNestArtistRadio():
     '''
     def __init__(self, artist, count):
         params = { 'type': 'artist-radio', 'artist': artist, 'results': int(count) }
-        self.enp = EchoNestPlaylist('Artist radio for ' + artist, params)
-        self.name = self.enp.name
+        super(EchoNestArtistRadio, self).__init__('Artist radio for ' + artist, params)
 
-    def next_track(self):
-        return self.enp.next_track()
-
-class EchoNestArtistPlaylist():
+class EchoNestArtistPlaylist(EchoNestPlaylist):
     '''
         A PBL source that generates a stream of tracks by the given
         artist
@@ -149,11 +146,8 @@ class EchoNestArtistPlaylist():
     '''
     def __init__(self, artist, count):
         params = { 'type': 'artist', 'artist': artist, 'results': int(count) }
-        self.enp = EchoNestPlaylist('Artist playlist for ' + artist, params)
-        self.name = self.enp.name
+        super(EchoNestArtistPlaylist, self).__init__('Artist playlist for ' + artist, params)
 
-    def next_track(self):
-        return self.enp.next_track()
 
 def _annotate_tracks_with_echonest_data(tids):
     otids = tlib.annotate_tracks_from_cache('echonest', tids)

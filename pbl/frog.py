@@ -2,7 +2,7 @@ import requests
 import random
 from track_manager import tlib
 
-class BoilTheFrogSource:
+class BoilTheFrogSource(object):
     '''
         a PBL source that generates a list of tracks that gradually go from the
         starting artist to the ending artist

@@ -27,7 +27,7 @@ spotify.trace = False
 
 '''
 
-class TrackLibrary:
+class TrackLibrary(object):
     
     def __init__(self):
         self.tmap = { }
@@ -67,7 +67,7 @@ class TrackLibrary:
 
 tlib = TrackLibrary()
 
-class PlaylistSource:
+class PlaylistSource(object):
 
     def __init__(self, name, uri):
         self.name = name
