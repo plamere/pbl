@@ -115,6 +115,10 @@ class TestPBL(unittest.TestCase):
         pipe = Concatenate([kp, af_vw])
         assert(runner(pipe, 20) == 20)
 
+    def test_track_source(self):
+        t = TrackSourceByName('weezer el scorcho')
+        assert(runner(t, 20) == 1)
+
     def test_album_combo3(self):
         # combine after forever and the civil wars, but lead with Katy Perry
 

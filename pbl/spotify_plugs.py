@@ -132,8 +132,11 @@ class PlaylistSource(object):
 
     def _get_more_tracks(self):
         _,_,user,_,playlist_id = self.uri.split(':')
-        results = _get_spotify().user_playlist_tracks(user, playlist_id, 
-            limit=self.limit, offset=self.next_offset)
+        try:
+            results = _get_spotify().user_playlist_tracks(user, playlist_id, 
+                limit=self.limit, offset=self.next_offset)
+        except spotipy.SpotifyException as e:
+            raise PBLException(self, e.msg)
 
         self.total = results['total']
         for item in results['items']:
@@ -155,7 +158,8 @@ class PlaylistSource(object):
                     msg += ' for user ' + self.user
                 raise PBLException(self, msg)
 
-        if self.uri and self.cur_index >= len(self.tracks) and len(self.tracks) < self.total:
+        if self.uri and self.cur_index >= len(self.tracks) \
+            and len(self.tracks) < self.total:
             self._get_more_tracks()
 
         if self.cur_index < len(self.tracks):
@@ -180,13 +184,44 @@ class TrackSource(object):
     def next_track(self):
         if self.buffer == None:
             self.buffer = []
-            results = _get_spotify().tracks(self.uris)
+            try:
+                results = _get_spotify().tracks(self.uris)
+            except spotipy.SpotifyException as e:
+                raise PBLException(self, e.msg)
             for track in results['tracks']:
-                self.buffer.append(track['id'])
-                _add_track(self.name, track)
-            
+                if track and 'id' in track:
+                    self.buffer.append(track['id'])
+                    _add_track(self.name, track)
+                else:
+                    raise PBLException(self, 'bad track')
+                
         if len(self.buffer) > 0:
             return self.buffer.pop(0)
+        else:
+            return None
+
+class TrackSourceByName(object):
+    ''' A PBL Source that generates a track given its artist and title
+
+        :param title: the title and/or artist of the track
+    '''
+    def __init__(self, title):
+        self.name = title 
+        self.title = title
+        self.uri = None
+
+    def next_track(self):
+        if self.uri == None:
+            try:
+                track = _find_track_by_name(_get_spotify(), self.title)
+                if track and 'id' in track:
+                    _add_track(self.name, track)
+                    self.uri = track['id']
+                    return self.uri
+                else:
+                    raise PBLException(self, "Can't find that track")
+            except spotipy.SpotifyException as e:
+                raise PBLException(self, e.msg)
         else:
             return None
 
@@ -221,10 +256,17 @@ class AlbumSource(object):
             self.buffer = []
             if self.uri:
                 _,_,id = self.uri.split(':')
-                results = _get_spotify().album_tracks(id)
+
+                try:
+                    results = _get_spotify().album_tracks(id)
+                except spotipy.SpotifyException as e:
+                    raise PBLException(self, e.msg)
+
                 for track in results['items']:
                     self.buffer.append(track['id'])
                     _add_track(self.name, track)
+            else:
+                raise PBLException(self, "Can't find that album");
 
         if len(self.buffer) > 0:
             return self.buffer.pop(0)
@@ -252,7 +294,10 @@ class ArtistTopTracks(object):
 
             if self.uri != None:
                 _,_,id = self.uri.split(':')
-                results = _get_spotify().artist_top_tracks(id)
+                try:
+                    results = _get_spotify().artist_top_tracks(id)
+                except spotipy.SpotifyException as e:
+                    raise PBLException(self, e.msg)
                 for track in results['tracks']:
                     self.buffer.append(track['id'])
                     _add_track(self.name, track)
@@ -362,6 +407,13 @@ def _find_artist_by_name(sp, name):
     results = _get_spotify().search(q=name, type='artist')
     if len(results['artists']['items']) > 0:
         return results['artists']['items'][0]['uri']
+    else:
+        return None
+
+def _find_track_by_name(sp, name):
+    results = _get_spotify().search(q=name, type='track')
+    if len(results['tracks']['items']) > 0:
+        return results['tracks']['items'][0]
     else:
         return None
 

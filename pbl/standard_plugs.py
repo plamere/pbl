@@ -698,7 +698,7 @@ class ArtistFilter(object):
     def __init__(self, source, artistNames):
         self.name = source.name + ' with songs by ' + ', '.join(artistNames) + ' removed'
         self.source = source
-        self.bad_artists = set(artistNames)
+        self.bad_artists = set([a.lower() for a in artistNames])
         self.debug = False
 
     def next_track(self):
@@ -707,7 +707,7 @@ class ArtistFilter(object):
             track = self.source.next_track()
             if track:
                 tinfo = tlib.get_track(track)
-                if tinfo['artist'] not in self.bad_artists:
+                if tinfo['artist'].lower() not in self.bad_artists:
                     return track
                 else:
                     if self.debug:
