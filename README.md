@@ -84,3 +84,4 @@ If you have suggestions, bugs or other issues specific to this library, file the
 ## Version
 
 - 1.0 - 06/20/2015 - Initial release
+- 1.1.3 - 07/24/2015 - improved error handling, plus some new components
