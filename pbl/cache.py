@@ -1,7 +1,8 @@
 import leveldb
 import json
+import os
 
-cache_path = os.environ.get('PBL_CACHE_PATH'):
+cache_path = os.environ.get('PBL_CACHE_PATH')
 if not cache_path:
     cache_path = '.cache'
 

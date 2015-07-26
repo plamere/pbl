@@ -1,4 +1,4 @@
 v1.0 June 20, 2015 -- Intitial public release
 v1.1 June 22, 2015 -- Added annotator caching with leveldb
 v1.1 June 22, 2015 -- Added no cache option
-v1.1.4 Jul 26, 2015 -- Flexible cache location
+v1.1.5 Jul 26, 2015 -- Flexible cache location
