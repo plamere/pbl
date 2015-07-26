@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pbl',
-    version='1.1.3',
+    version='1.1.4',
     description='A Python library for building playlists',
     author="@plamere",
     author_email="paul@spotify.com",

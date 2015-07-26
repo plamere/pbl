@@ -1,9 +1,11 @@
 import leveldb
 import json
 
+cache_path = os.environ.get('PBL_CACHE_PATH'):
+if not cache_path:
+    cache_path = '.cache'
 
-db = leveldb.LevelDB('.cache')
-
+db = leveldb.LevelDB(cache_path)
 
 def put(type, tid, obj):
     key = get_key(type, tid)
