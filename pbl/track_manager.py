@@ -1,10 +1,5 @@
-
-import os
-
-if os.environ.get('PBL_NO_CACHE'):
-    import nocache as cache
-else:
-    import cache
+import cache_manager
+cache = cache_manager.get_cache()
 
 class TrackLibrary(object):
     ''' manages track attributes
