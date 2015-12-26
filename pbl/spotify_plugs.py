@@ -74,6 +74,7 @@ import engine
 import spotipy
 import spotipy.util
 import pprint
+import simplejson as json
 
 
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -94,7 +95,7 @@ class PlaylistSource(object):
 
     def __init__(self, name, uri=None, user=None):
         self.name = name
-        self.uri = uri
+        self.uri = normalize_uri(uri)
         self.user = user
 
         self.next_offset = 0
@@ -129,7 +130,7 @@ class PlaylistSource(object):
     def _get_more_tracks(self):
         _,_,user,_,playlist_id = self.uri.split(':')
         try:
-            results = _get_spotify().user_playlist_tracks(user, playlist_id, 
+            results = _get_spotify().user_playlist_tracks(user, playlist_id,
                 limit=self.limit, offset=self.next_offset)
         except spotipy.SpotifyException as e:
             raise engine.PBLException(self, e.msg)
@@ -174,7 +175,7 @@ class TrackSource(object):
     '''
     def __init__(self, uris=[]):
         self.name = 'Tracks '
-        self.uris = uris
+        self.uris = [normalize_uri(uri) for uri in uris]
         self.buffer = None
 
     def next_track(self):
@@ -190,7 +191,7 @@ class TrackSource(object):
                     _add_track(self.name, track)
                 else:
                     raise engine.PBLException(self, 'bad track')
-                
+
         if len(self.buffer) > 0:
             return self.buffer.pop(0)
         else:
@@ -202,7 +203,7 @@ class TrackSourceByName(object):
         :param title: the title and/or artist of the track
     '''
     def __init__(self, title):
-        self.name = title 
+        self.name = title
         self.title = title
         self.uri = None
 
@@ -231,7 +232,7 @@ class AlbumSource(object):
     '''
 
     def __init__(self, title=None, artist=None, uri=None):
-        self.uri = uri
+        self.uri = normalize_uri(uri)
         self.title = title
         self.artist = artist
         self.name = 'album ' + title if title != None else uri
@@ -276,7 +277,7 @@ class ArtistTopTracks(object):
         :param uri: the uri of the artist
     '''
     def __init__(self, name=None, uri=None):
-        self.uri = uri
+        self.uri = normalize_uri(uri)
         self.name = 'Top tracks by ' + name
         self.artist_name = name
         self.buffer = None
@@ -317,7 +318,7 @@ class PlaylistSave(object):
     def __init__(self, source, playlist_name= None, user=None, uri=None, \
         create=False, append=False, max_size=100):
         self.source = source
-        self.uri = uri
+        self.uri = normalize_uri(uri)
         self.user = user
         self.name = 'Spotify Save'
         self.playlist_name = playlist_name
@@ -399,7 +400,7 @@ def _get_auth_spotify(user):
 
 def _find_playlist_by_name(sp, user, name):
     batch_size = 50
-    for start in xrange(0, 1000, batch_size):   
+    for start in xrange(0, 1000, batch_size):
         playlists = sp.user_playlists(user, limit=batch_size, offset=start)
         for playlist in playlists['items']:
             if playlist['name'] == name:
@@ -423,20 +424,55 @@ def _find_track_by_name(sp, name):
 def _annotate_tracks_with_spotify_data(tids):
     tids = tlib.annotate_tracks_from_cache('spotify', tids)
     if len(tids) > 0:
-        print 'annotate tracks with spotify', tids
+        # print 'annotate tracks with spotify', tids
         results = _get_spotify().tracks(tids)
         for track in results['tracks']:
             tlib.annotate_track(track['id'], 'spotify', track)
 
+def _annotate_tracks_with_audio_features(tids):
+    otids = tlib.annotate_tracks_from_cache('audio', tids)
+    if len(otids) > 0:
+        stids = set(otids)
+        # print 'getting audio features from spotify for', otids
+        results = _get_spotify().audio_features(tids)
+        # print 'results', json.dumps(results, indent=4)
+        for track in results:
+            tlib.annotate_track(track['id'], 'audio', track)
+
+
 def _add_track(source, track):
     dur = int(track['duration_ms'] / 1000.)
-    tlib.make_track(track['id'], track['name'], 
+    tlib.make_track(track['id'], track['name'],
                 track['artists'][0]['name'], dur, source)
     tlib.annotate_track(track['id'], 'spotify', _flatten_track(track))
 
 def _flatten_track(track):
     return track
 
+
+def check_uri(uri):
+    if uri:
+        if not uri.startswith('spotify:'):
+            raise ValueError('bad uri: ' + uri)
+
+def normalize_uri(uri):
+    # convert urls like:
+    #    https://open.spotify.com/user/plamere/playlist/3F1VlEt8oRsKOk9hlp5JDF
+    #    https://open.spotify.com/track/0v2Ad5NPKP8LKv48m0pVHx
+    #    https://open.spotify.com/album/0Gr8tHhOH8vzBTFqnf0YjT
+    #    https://open.spotify.com/artist/6ISyfZw4EVt16zhmH2lvxp
+    #
+    # To URIs like:
+    #    spotify:user:plamere:playlist:3F1VlEt8oRsKOk9hlp5JDF
+    #    spotify:artist:6ISyfZw4EVt16zhmH2lvxp
+
+    if uri:
+        if uri.startswith('https://open.spotify.com'):
+            uri = uri.replace("https://open.spotify.com", "spotify")
+            uri = uri.replace("/", ":")
+
+    check_uri(uri)
+    return uri
 
 _spotify_annotator = {
     'name': 'spotify',
@@ -445,3 +481,22 @@ _spotify_annotator = {
 }
 
 tlib.add_annotator(_spotify_annotator)
+
+_audio_annotator = {
+    'name': 'audio',
+    'annotator': _annotate_tracks_with_audio_features,
+    'batch_size': 50
+}
+
+tlib.add_annotator(_audio_annotator)
+
+
+if __name__ == '__main__':
+    def test(uri):
+        print uri, '-->', normalize_uri(uri)
+
+    test("spotify:user:plamere:playlist:3F1VlEt8oRsKOk9hlp5JDF")
+    test("https://open.spotify.com/user/plamere/playlist/3F1VlEt8oRsKOk9hlp5JDF")
+    test("https://open.spotify.com/track/0v2Ad5NPKP8LKv48m0pVHx")
+    test("https://open.spotify.com/album/0Gr8tHhOH8vzBTFqnf0YjT")
+    test("https://open.spotify.com/artist/6ISyfZw4EVt16zhmH2lvxp")

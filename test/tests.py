@@ -97,6 +97,14 @@ class TestPBL(unittest.TestCase):
         pipe = Alternate([af, vw])
         assert(runner(pipe, 20) == 20)
 
+    def test_urls_as_uri(self):
+        # use urls instead of uris
+
+        a1 = AlbumSource('POD', uri='https://open.spotify.com/album/68KGEP5DWDsbtmo1Li1I2N')
+        a2 = AlbumSource('after forever', uri='https://open.spotify.com/album/1iAF9zMPpixkgQaDZFjhu2')
+        pipe = Alternate([a1, a2])
+        assert(runner(pipe, 20) == 20)
+
     def test_album_source_by_name(self):
         # combine after foreer and the civil wars
 
@@ -208,6 +216,13 @@ class TestPBL(unittest.TestCase):
         he = AttributeRangeFilter(coffee, 'echonest.energy', max_val=.5)
         assert(runner(he, 3) == 3)
 
+    def test_audio_attribute_filter(self):
+        ''' find coffeehouse tracks with energy less than .5
+        '''
+        coffee = PlaylistSource('coffeehouse', ucoffee_house)
+        he = AttributeRangeFilter(coffee, 'audio.energy', max_val=.5)
+        assert(runner(he, 3) == 3)
+
     def test_sp_attribute_filter(self):
         ''' find coffeehouse tracks with duration less than 5 mins
         '''
@@ -235,6 +250,15 @@ class TestPBL(unittest.TestCase):
         coffee = PlaylistSource('coffeehouse', ucoffee_house)
         encoffee = Annotator(coffee, 'echonest')
         high_energy_coffee = AttributeRangeFilter(encoffee, 'echonest.energy', min_val=.5)
+        assert(runner(high_energy_coffee, 10) >= 0)
+
+    def test_audio_filter_on_sp_tracks(self):
+        ''' generate spotify tracks, annotate with audio data and filter
+        '''
+
+        coffee = PlaylistSource('coffeehouse', ucoffee_house)
+        encoffee = Annotator(coffee, 'audio')
+        high_energy_coffee = AttributeRangeFilter(encoffee, 'audio.energy', min_val=.5)
         assert(runner(high_energy_coffee, 10) >= 0)
 
     def test_new_style_annotation(self):
