@@ -1,10 +1,11 @@
 import cache_manager
+
+#cache = cache_manager.get_cache("NOCACHE")
 cache = cache_manager.get_cache()
 
 class TrackLibrary(object):
     ''' manages track attributes
     '''
-    
     def __init__(self):
         self.tmap = { }
         self.annotators = {}
@@ -19,7 +20,6 @@ class TrackLibrary(object):
         '''
         info['src'] = source_name
         self.tmap[tid] = info
-
 
     def annotate_tracks_from_cache(self, type, tids):
         out = []
@@ -42,7 +42,10 @@ class TrackLibrary(object):
 
             :param tid: the track id
         '''
-        return self.tmap[tid]
+        if tid in self.tmap:
+            return self.tmap[tid]
+        else:
+            return None
 
     def get_tn(self, tid):
         track = self.get_track(tid)
@@ -103,7 +106,6 @@ class TrackLibrary(object):
                 print 'bad attr path', attr
 
         return None
-            
+
 
 tlib = TrackLibrary()
-

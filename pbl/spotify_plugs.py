@@ -68,6 +68,32 @@
             "duration": 7,
             "id": "5oPzMRHjORXQlLemgpfacm"
         }
+
+        New spotify track:
+
+        {
+            "src": "Teen Party",
+            "artist": "Various Artists",
+            "artist_id": "1234123412342134",
+            "title": "Walk The Moon - Teen Party Intro",
+            "duration": 7,
+            "id": "5oPzMRHjORXQlLemgpfacm"
+            "audio" : {
+                name: ""
+            },
+
+            artists: [
+
+            ]
+
+            "primary_artist" : {
+                 "name" : "artist name",
+                 "id:" : "1234",
+                 "popularity": 33,
+                 "followers": 33
+                 "genres" : [],
+            }
+        }
 '''
 from track_manager import tlib
 import engine
@@ -75,10 +101,13 @@ import spotipy
 import spotipy.util
 import pprint
 import simplejson as json
+import cache_manager
 
 
 from spotipy.oauth2 import SpotifyClientCredentials
 
+
+cache = cache_manager.get_cache("NOCACHE")
 
 class PlaylistSource(object):
     '''
@@ -384,6 +413,7 @@ def _get_spotify():
             spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
         spotify.trace = False
         engine.setEnv('spotify', spotify)
+    spotify.trace = True
     return spotify
 
 def _get_auth_spotify(user):
@@ -429,6 +459,118 @@ def _annotate_tracks_with_spotify_data(tids):
         for track in results['tracks']:
             tlib.annotate_track(track['id'], 'spotify', track)
 
+def _annotate_tracks_with_spotify_album_data(tids):
+    tids = tlib.annotate_tracks_from_cache('album', tids)
+    if len(tids) > 0:
+        # print 'annotate tracks with spotify', tids
+        results = _get_spotify().albums(tids)
+        for album in results['albums']:
+            tlib.annotate_track(track['id'], 'spotify', track)
+
+def _annotate_tracks_with_spotify_data_full(tids):
+    # full annotation
+    tids = tlib.annotate_tracks_from_cache('spotify', tids)
+    if len(tids) > 0:
+        # print 'annotate tracks with spotify', tids
+        results = _get_spotify().tracks(tids)
+        album_ids = set()
+        artist_ids = set()
+        for track in results['tracks']:
+            album_ids.add(track['album']['id'])
+            for artist in track['artists']:
+                artist_ids.add(artist['id'])
+
+        albums = get_albums(album_ids)
+        artists = get_artists(artist_ids)
+
+
+        ntrack = {}
+        for track in results['tracks']:
+            primary_artist = artists[track['artists'][0]['id']]
+            album = albums[track['album']['id']]
+            ntrack['duration'] = track['duration_ms'] / 1000
+            ntrack['explicit'] = track['explicit']
+            ntrack['popularity'] = track['popularity']
+            ntrack['track_number'] = track['track_number']
+            ntrack['disc_number'] = track['disc_number']
+
+            ntrack['primary_artist_genres'] = album['genres']
+            ntrack['primary_artist_popularity'] = primary_artist['popularity']
+            ntrack['primary_artist_followers'] = primary_artist['followers']
+
+            ntrack['album_name'] = album['name']
+            ntrack['album_id'] = album['id']
+            ntrack['album_genres'] = album['genres']
+            ntrack['album_release_date'] = album['release_date']
+            ntrack['album_popularity'] = album['popularity']
+            ntrack['album_type'] = album['album_type']
+
+            if False:
+                ntrack['primary_artist'] = primary_artist
+                full_artists = []
+                for artist in track['artists']:
+                    full_artists.append(artists[artist['id']])
+                track['artists'] = full_artists
+
+            tlib.annotate_track(track['id'], 'spotify', ntrack)
+
+def get_albums(aids):
+    album_map, naids = get_items_from_cache(aids)
+    results = _get_spotify().albums(naids)
+
+    for album in results['albums']:
+        falbum = flatten_album(album)
+        album_map[ falbum['id']] = falbum
+        put_item_in_cache(falbum)
+    return album_map
+
+def get_artists(aids):
+    artist_map, naids = get_items_from_cache(aids)
+    results = _get_spotify().artists(naids)
+
+    for artist in results['artists']:
+        fartist = flatten_artist(artist)
+        artist_map[ fartist['id']] = fartist
+        put_item_in_cache(fartist)
+    return artist_map
+
+
+def get_items_from_cache(aids):
+    map = {}
+    naids = []
+
+    for aid in aids:
+        fitem = cache.get('item', aid)
+        if fitem:
+            map[aid] = fitem
+        else:
+            naids.append(aid)
+    return map, aids
+
+def put_item_in_cache(item):
+    cache.put('item', item['id'], item)
+
+def flatten_album(album):
+    falbum = {}
+    falbum['name'] = album['name']
+    falbum['id'] = album['id']
+    falbum['album_type'] = album['album_type']
+    falbum['release_date'] = album['release_date']
+    falbum['popularity'] = album['popularity']
+    falbum['genres'] = album['genres']
+    return falbum
+
+def flatten_artist(artist):
+    fartist = {}
+    fartist['name'] = artist['name']
+    fartist['id'] = artist['id']
+    fartist['popularity'] = artist['popularity']
+    fartist['followers'] = artist['followers']['total']
+    #fartist['large_image'] = artist['images'][0]['url']
+    return fartist
+
+def flatten_audio(audio):
+    return audio
 def _annotate_tracks_with_audio_features(tids):
     otids = tlib.annotate_tracks_from_cache('audio', tids)
     if len(otids) > 0:
@@ -439,6 +581,17 @@ def _annotate_tracks_with_audio_features(tids):
         for track in results:
             tlib.annotate_track(track['id'], 'audio', track)
 
+
+def _annotate_tracks_with_full_album(tids):
+    pass
+
+
+def _annotate_tracks_with_full_artist(tids):
+    pass
+
+
+def _annotate_tracks_with_full_spotify_data(tids):
+    pass
 
 def _add_track(source, track):
     dur = int(track['duration_ms'] / 1000.)
@@ -476,7 +629,7 @@ def normalize_uri(uri):
 
 _spotify_annotator = {
     'name': 'spotify',
-    'annotator': _annotate_tracks_with_spotify_data,
+    'annotator': _annotate_tracks_with_spotify_data_full,
     'batch_size': 50
 }
 
@@ -491,7 +644,7 @@ _audio_annotator = {
 tlib.add_annotator(_audio_annotator)
 
 
-if __name__ == '__main__':
+def test_urls():
     def test(uri):
         print uri, '-->', normalize_uri(uri)
 
@@ -500,3 +653,22 @@ if __name__ == '__main__':
     test("https://open.spotify.com/track/0v2Ad5NPKP8LKv48m0pVHx")
     test("https://open.spotify.com/album/0Gr8tHhOH8vzBTFqnf0YjT")
     test("https://open.spotify.com/artist/6ISyfZw4EVt16zhmH2lvxp")
+
+def test_full_annotation():
+
+    tids = ["09CtPGIpYB4BrO8qb1RGsF", "4phICvcdAfp3eMhVHDls6m"]
+    for tid in tids:
+        tlib.make_track(tid, 'fake_name', 'fake_artist', 1, 'test')
+
+    _annotate_tracks_with_spotify_data_full(tids)
+    _annotate_tracks_with_audio_features(tids)
+
+    for tid in tids:
+        track = tlib.get_track(tid)
+        print json.dumps(track, indent=4)
+        print
+
+if __name__ == '__main__':
+    import nocache
+    cache = nocache
+    test_full_annotation()
