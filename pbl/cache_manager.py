@@ -1,4 +1,6 @@
 import os
+
+#def get_cache(cache_type="NONE"):
 def get_cache(cache_type=None):
     if cache_type == None:
         cache_type = os.environ.get('PBL_CACHE')

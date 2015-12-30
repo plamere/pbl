@@ -103,11 +103,10 @@ import pprint
 import simplejson as json
 import cache_manager
 
-
 from spotipy.oauth2 import SpotifyClientCredentials
 
 
-cache = cache_manager.get_cache("NOCACHE")
+cache = cache_manager.get_cache()
 
 class PlaylistSource(object):
     '''
@@ -145,10 +144,8 @@ class PlaylistSource(object):
     def _get_uri_from_name_and_user(self, name, user):
         results = _get_spotify().user_playlists(user)
         while results:
-            #pprint.pprint(results)
-            #print
             for playlist in results['items']:
-                if playlist['name'] == name:
+                if playlist['name'].lower() == name.lower():
                     return playlist['uri']
             if results['next']:
                 results = _get_spotify().next(results)
@@ -411,9 +408,8 @@ def _get_spotify():
             spotify = spotipy.Spotify(auth=auth_token)
         else:
             spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-        spotify.trace = False
+        spotify.trace_out = True
         engine.setEnv('spotify', spotify)
-    spotify.trace = True
     return spotify
 
 def _get_auth_spotify(user):
@@ -451,7 +447,7 @@ def _find_track_by_name(sp, name):
     else:
         return None
 
-def _annotate_tracks_with_spotify_data(tids):
+def _annotate_tracks_with_spotify_data_old(tids):
     tids = tlib.annotate_tracks_from_cache('spotify', tids)
     if len(tids) > 0:
         # print 'annotate tracks with spotify', tids
@@ -459,16 +455,9 @@ def _annotate_tracks_with_spotify_data(tids):
         for track in results['tracks']:
             tlib.annotate_track(track['id'], 'spotify', track)
 
-def _annotate_tracks_with_spotify_album_data(tids):
-    tids = tlib.annotate_tracks_from_cache('album', tids)
-    if len(tids) > 0:
-        # print 'annotate tracks with spotify', tids
-        results = _get_spotify().albums(tids)
-        for album in results['albums']:
-            tlib.annotate_track(track['id'], 'spotify', track)
-
 def _annotate_tracks_with_spotify_data_full(tids):
     # full annotation
+    print "spotify full annotate", len(tids)
     tids = tlib.annotate_tracks_from_cache('spotify', tids)
     if len(tids) > 0:
         # print 'annotate tracks with spotify', tids
@@ -480,15 +469,17 @@ def _annotate_tracks_with_spotify_data_full(tids):
             for artist in track['artists']:
                 artist_ids.add(artist['id'])
 
+        print "  spotify artist annotate", len(artist_ids)
+        print "  spotify album annotate", len(album_ids)
         albums = get_albums(album_ids)
         artists = get_artists(artist_ids)
 
 
-        ntrack = {}
         for track in results['tracks']:
+            ntrack = {}
             primary_artist = artists[track['artists'][0]['id']]
             album = albums[track['album']['id']]
-            ntrack['duration'] = track['duration_ms'] / 1000
+            ntrack['duration_ms'] = track['duration_ms']
             ntrack['explicit'] = track['explicit']
             ntrack['popularity'] = track['popularity']
             ntrack['track_number'] = track['track_number']
@@ -516,22 +507,31 @@ def _annotate_tracks_with_spotify_data_full(tids):
 
 def get_albums(aids):
     album_map, naids = get_items_from_cache(aids)
-    results = _get_spotify().albums(naids)
+    max_per_batch = 20
 
-    for album in results['albums']:
-        falbum = flatten_album(album)
-        album_map[ falbum['id']] = falbum
-        put_item_in_cache(falbum)
+    start = 0
+    while start < len(naids):
+        batch = naids[start:start + max_per_batch]
+        results = _get_spotify().albums(batch)
+        for album in results['albums']:
+            falbum = flatten_album(album)
+            album_map[ falbum['id']] = falbum
+            put_item_in_cache(falbum)
+        start += len(results['albums'])
     return album_map
 
 def get_artists(aids):
+    max_per_batch = 50
     artist_map, naids = get_items_from_cache(aids)
-    results = _get_spotify().artists(naids)
-
-    for artist in results['artists']:
-        fartist = flatten_artist(artist)
-        artist_map[ fartist['id']] = fartist
-        put_item_in_cache(fartist)
+    start = 0
+    while start < len(naids):
+        batch = naids[start:start + max_per_batch]
+        results = _get_spotify().artists(batch)
+        for artist in results['artists']:
+            fartist = flatten_artist(artist)
+            artist_map[ fartist['id'] ] = fartist
+            put_item_in_cache(fartist)
+        start += len(results['artists'])
     return artist_map
 
 
@@ -545,7 +545,7 @@ def get_items_from_cache(aids):
             map[aid] = fitem
         else:
             naids.append(aid)
-    return map, aids
+    return map, naids
 
 def put_item_in_cache(item):
     cache.put('item', item['id'], item)
@@ -571,33 +571,21 @@ def flatten_artist(artist):
 
 def flatten_audio(audio):
     return audio
+
 def _annotate_tracks_with_audio_features(tids):
     otids = tlib.annotate_tracks_from_cache('audio', tids)
     if len(otids) > 0:
         stids = set(otids)
-        # print 'getting audio features from spotify for', otids
-        results = _get_spotify().audio_features(tids)
-        # print 'results', json.dumps(results, indent=4)
+        results = _get_spotify().audio_features(otids)
         for track in results:
             tlib.annotate_track(track['id'], 'audio', track)
 
-
-def _annotate_tracks_with_full_album(tids):
-    pass
-
-
-def _annotate_tracks_with_full_artist(tids):
-    pass
-
-
-def _annotate_tracks_with_full_spotify_data(tids):
-    pass
 
 def _add_track(source, track):
     dur = int(track['duration_ms'] / 1000.)
     tlib.make_track(track['id'], track['name'],
                 track['artists'][0]['name'], dur, source)
-    tlib.annotate_track(track['id'], 'spotify', _flatten_track(track))
+    #tlib.annotate_track(track['id'], 'spotify', _flatten_track(track))
 
 def _flatten_track(track):
     return track

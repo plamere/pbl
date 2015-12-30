@@ -331,10 +331,11 @@ class Sorter(object):
         self.max_size = max_size
         self.attr = attr
         self.reverse = reverse
+        self.annotator = get_annotator(source, attr)
 
     def next_track(self):
         while self.filling:    
-            track = self.source.next_track()
+            track = self.annotator.next_track()
             if track and (self.max_size == 0 or len(self.buffer) < self.max_size):
                 self.buffer.append(track)
             else:
@@ -631,11 +632,12 @@ class AttributeRangeFilter(object):
         self.min_val = min_val
         self.max_val = max_val
         self.match = match
+        self.annotator = get_annotator(source, attr)
 
     def next_track(self):
         while True:
             good = True
-            track = self.source.next_track()
+            track = self.annotator.next_track()
             if track:
                 attr_val = tlib.get_attr(track, self.attr)
                 if attr_val == None:
@@ -796,3 +798,11 @@ class SaveToJson(object):
             
         print >> f, json.dumps(out, indent=4)
         f.close()
+
+
+def get_annotator(source, attr):
+    fields = attr.split('.')
+    if len(fields) == 2:
+        type, name = fields
+        return Annotator(source, type)
+    return source

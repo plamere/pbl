@@ -74,6 +74,26 @@ class TrackLibrary(object):
         else:
             print "can't annotate missing track", tid
 
+    def annotate_tracks_with_attribute(self, tids, attr):
+        fields = attr.split('.')
+        if len(fields) == 2:
+            type, attr = fields
+            batch_size = self.annotators[type]['batch_size']
+            start = 0
+            while start < len(tids):
+                ntids = tids[start:start + batch_size]
+                self.annotators[type]['annotator'](ntids)
+                start += batch_size
+
+    def get_batch_size(self, attr):
+        fields = attr.split('.')
+        if len(fields) == 2:
+            type, attr = fields
+            if type in self.annotators:
+                batch_size = self.annotators[type]['batch_size']
+                return batch_size
+        return 1
+
     def get_attr(self, tid, attr):
         '''
             Gets the value of the given attribute for a track
