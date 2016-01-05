@@ -642,7 +642,7 @@ class AttributeRangeFilter(object):
                 attr_val = tlib.get_attr(track, self.attr)
                 if attr_val == None:
                     good = False
-                elif self.match and attr_val != self.match:
+                elif self.match != None and attr_val != self.match:
                     good = False
                 else:
                     if self.min_val and attr_val < self.min_val:

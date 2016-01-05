@@ -1,11 +1,7 @@
 import simplejson as json
 import redis
 
-r = redis.StrictRedis(host='localhost', port=6379, db=4)
-
-max_memory = 1024 * 1024 * 100
-r.config_set('maxmemory', max_memory);
-r.config_set('maxmemory-policy', 'allkeys-lru');
+r = redis.StrictRedis(host='localhost', port=6380, db=0)
 name = 'redis'
 
 def put(type, tid, obj):
