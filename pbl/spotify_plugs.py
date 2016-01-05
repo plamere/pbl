@@ -404,7 +404,6 @@ def _get_spotify():
     if spotify == None:
         auth_token = engine.getEnv('spotify_auth_token')
         if auth_token:
-            print 'spotify auth token', auth_token
             spotify = spotipy.Spotify(auth=auth_token)
         else:
             spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
