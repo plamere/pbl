@@ -806,3 +806,22 @@ def get_annotator(source, attr):
         type, name = fields
         return Annotator(source, type)
     return source
+
+
+class PushableSource(object):
+    ''' A source that allows you to push tracks
+        back for later retrieval
+    '''
+    def __init__(self, source):
+        self.source = source
+        self.name = 'pushable ' + source.name
+        self.buffer = []
+
+    def next_track(self):
+        if len(self.buffer) > 0:
+            return self.buffer.pop()
+        else:
+            return self.source.next_track()
+
+    def push(self, track):
+        self.buffer.append(track)

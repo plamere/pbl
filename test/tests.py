@@ -349,6 +349,23 @@ class TestPBL(unittest.TestCase):
         ps = AlbumSource('Tarkus', 'Emerson, Lake & Palmer')
         assert(runner(ps, 10) == 7)
 
+    def test_pushable_source(self):
+        ps = AlbumSource('Tarkus', 'Emerson, Lake & Palmer')
+        ps2 = PushableSource(ps)
+        t1 = ps2.next_track()
+        t2 = ps2.next_track()
+        t3 = ps2.next_track()
+        ps2.push(t1)
+        pt1 = ps2.next_track()
+        assert(t1 == pt1)
+
+        ps2.push(t2)
+        ps2.push(t3)
+        pt3 = ps2.next_track()
+        assert(t3 == pt3)
+        pt2 = ps2.next_track()
+        assert(t2 == pt2)
+
     def test_album_by_name(self):
         ps = AlbumSource('Tarkus')
         assert(runner(ps, 10) == 7)
