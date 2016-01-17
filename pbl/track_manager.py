@@ -19,14 +19,8 @@ class TrackLibrary(object):
             :param info: the track info
         '''
         # print "add_track", source_name, info['title'], info['artist']
-        if tid not in self.tmap:
-            info['src'] = source_name
-            self.tmap[tid] = info
-        else:
-            cur_info = self.tmap[tid]
-            cur_src = cur_info['src']
-            if source_name not in cur_src:
-                cur_info['src'] = cur_src + ', ' + source_name
+        info['src'] = source_name
+        self.tmap[tid] = info
 
     def annotate_tracks_from_cache(self, type, tids):
         out = []
@@ -70,12 +64,7 @@ class TrackLibrary(object):
             'src': source
         }
         # print "make_track", source, title, artist
-        if id not in self.tmap:
-            self.tmap[id] = track
-        else:
-            cur_src = self.tmap[id]['src']
-            if source not in cur_src:
-                self.tmap[id]['src'] = cur_src + ", " + source
+        self.tmap[id] = track
         return id
 
     def annotate_track(self, tid, name, data, add_to_cache=True):
