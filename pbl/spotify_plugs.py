@@ -607,6 +607,7 @@ def normalize_uri(uri):
     #    spotify:artist:6ISyfZw4EVt16zhmH2lvxp
 
     if uri:
+        uri = uri.strip()
         if uri.startswith('https://open.spotify.com'):
             uri = uri.replace("https://open.spotify.com", "spotify")
             uri = uri.replace("/", ":")
