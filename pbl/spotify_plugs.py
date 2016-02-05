@@ -164,7 +164,7 @@ class PlaylistSource(object):
         self.total = results['total']
         for item in results['items']:
             track = item['track']
-            if 'id' in track:
+            if track and 'id' in track:
                 self.tracks.append(track['id'])
                 _add_track(self.name, track)
         self.next_offset += self.limit
@@ -287,7 +287,7 @@ class AlbumSource(object):
                     raise engine.PBLException(self, e.msg)
 
                 for track in results['items']:
-                    if 'id' in track:
+                    if track and 'id' in track:
                         self.buffer.append(track['id'])
                         _add_track(self.name, track)
             else:
@@ -324,7 +324,7 @@ class ArtistTopTracks(object):
                 except spotipy.SpotifyException as e:
                     raise engine.PBLException(self, e.msg)
                 for track in results['tracks']:
-                    if 'id' in track:
+                    if track and 'id' in track:
                         self.buffer.append(track['id'])
                         _add_track(self.name, track)
             else:
@@ -455,7 +455,7 @@ def _annotate_tracks_with_spotify_data_old(tids):
         # print 'annotate tracks with spotify', tids
         results = _get_spotify().tracks(tids)
         for track in results['tracks']:
-            if 'id' in track:
+            if track and 'id' in track:
                 tlib.annotate_track(track['id'], 'spotify', track)
 
 def _annotate_tracks_with_spotify_data_full(tids):
@@ -581,7 +581,7 @@ def _annotate_tracks_with_audio_features(tids):
         stids = set(otids)
         results = _get_spotify().audio_features(otids)
         for track in results:
-            if 'id' in track:
+            if track and 'id' in track:
                 tlib.annotate_track(track['id'], 'audio', track)
 
 
