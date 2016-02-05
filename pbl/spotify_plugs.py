@@ -164,8 +164,9 @@ class PlaylistSource(object):
         self.total = results['total']
         for item in results['items']:
             track = item['track']
-            self.tracks.append(track['id'])
-            _add_track(self.name, track)
+            if 'id' in track:
+                self.tracks.append(track['id'])
+                _add_track(self.name, track)
         self.next_offset += self.limit
 
     def next_track(self):
@@ -286,8 +287,9 @@ class AlbumSource(object):
                     raise engine.PBLException(self, e.msg)
 
                 for track in results['items']:
-                    self.buffer.append(track['id'])
-                    _add_track(self.name, track)
+                    if 'id' in track:
+                        self.buffer.append(track['id'])
+                        _add_track(self.name, track)
             else:
                 raise engine.PBLException(self, "Can't find that album");
 
@@ -322,8 +324,9 @@ class ArtistTopTracks(object):
                 except spotipy.SpotifyException as e:
                     raise engine.PBLException(self, e.msg)
                 for track in results['tracks']:
-                    self.buffer.append(track['id'])
-                    _add_track(self.name, track)
+                    if 'id' in track:
+                        self.buffer.append(track['id'])
+                        _add_track(self.name, track)
             else:
                 raise engine.PBLException(self, "Can't find that artist")
 
@@ -452,7 +455,8 @@ def _annotate_tracks_with_spotify_data_old(tids):
         # print 'annotate tracks with spotify', tids
         results = _get_spotify().tracks(tids)
         for track in results['tracks']:
-            tlib.annotate_track(track['id'], 'spotify', track)
+            if 'id' in track:
+                tlib.annotate_track(track['id'], 'spotify', track)
 
 def _annotate_tracks_with_spotify_data_full(tids):
     # full annotation
@@ -577,7 +581,8 @@ def _annotate_tracks_with_audio_features(tids):
         stids = set(otids)
         results = _get_spotify().audio_features(otids)
         for track in results:
-            tlib.annotate_track(track['id'], 'audio', track)
+            if 'id' in track:
+                tlib.annotate_track(track['id'], 'audio', track)
 
 
 def _add_track(source, track):
