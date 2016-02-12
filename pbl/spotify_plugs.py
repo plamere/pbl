@@ -579,10 +579,20 @@ def _annotate_tracks_with_audio_features(tids):
     otids = tlib.annotate_tracks_from_cache('audio', tids)
     if len(otids) > 0:
         stids = set(otids)
-        results = _get_spotify().audio_features(otids)
-        for track in results:
-            if track and 'id' in track:
-                tlib.annotate_track(track['id'], 'audio', track)
+        try:
+            results = _get_spotify().audio_features(otids)
+            for track in results:
+                if track and 'id' in track:
+                    # print 'audio', json.dumps(track, indent=4)
+                    tlib.annotate_track(track['id'], 'audio', track)
+        except spotipy.SpotifyException as e:
+            # we may get a 404 if we request features for a single
+            # track and the track is missing. In this case we can
+            # ignore the error
+            if e.http_status >= 400 and e.http_status < 500:
+                pass
+            else:
+                raise engine.PBLException(self, e.msg)
 
 
 def _add_track(source, track):
