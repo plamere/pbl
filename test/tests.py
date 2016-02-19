@@ -50,6 +50,20 @@ class TestPBL(unittest.TestCase):
         filter = TrackFilter(both, teen2)
         assert(runner(filter, 20) == 20)
 
+    def test_track_self_filtering(self):
+        coffee = PlaylistSource('coffeehouse', ucoffee_house)
+        coffee2 = PlaylistSource('coffeehouse', ucoffee_house)
+        filter = TrackFilter(coffee, coffee2, invert=False)
+        assert(runner(filter, 100) == 0)
+
+    def test_track_inverse_self_filtering(self):
+        coffee = PlaylistSource('coffeehouse', ucoffee_house)
+        coffee2 = PlaylistSource('coffeehouse', ucoffee_house)
+        coffee3 = PlaylistSource('coffeehouse', ucoffee_house)
+        tlen = runner(coffee3, 1000)
+        filter = TrackFilter(coffee, coffee2, invert=True)
+        assert(runner(filter, 1000) == tlen)
+
     def test_fancy_filtering(self):
         coffee = PlaylistSource('coffeehouse', ucoffee_house)
         teen = PlaylistSource('Teen Party', uteen_party)

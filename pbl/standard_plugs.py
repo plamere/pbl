@@ -661,11 +661,12 @@ class TrackFilter(object):
         :param source: the source of tracks
         :param filter: the stream of bad tracks to be removed
     '''
-    def __init__(self, source, filter):
-        self.name = source.name + ' filtered by ' + filter.name
+    def __init__(self, source, filter, invert=False):
+        self.name = source.name + ('inverse' if invert else '') +'filtered by ' + filter.name
         self.source = source
         self.filter = filter
         self.bad_tracks = None
+        self.invert = invert
         self.debug = False
 
     def next_track(self):
@@ -681,7 +682,9 @@ class TrackFilter(object):
         while True:
             track = self.source.next_track()
             if track:
-                if not track in self.bad_tracks:
+                if self.invert and (track in self.bad_tracks):
+                    return track
+                elif (not self.invert) and (track not in self.bad_tracks):
                     return track
                 else:
                     if self.debug:
