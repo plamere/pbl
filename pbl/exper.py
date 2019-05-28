@@ -81,7 +81,11 @@ class PlaylistSource(object):
         self.cur_index = 0
 
     def _get_more_tracks(self):
-        _,_,user,_,playlist_id = self.uri.split(':')
+        fields = self.uri.split(':')
+        if len(fields) == 5:
+            _,_,user,_,playlist_id = fields
+        else:
+            _,_,playlist_id = fields
         results = spotify.user_playlist_tracks(user, playlist_id, 
             limit=self.limit, offset=self.next_offset)
 

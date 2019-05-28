@@ -154,10 +154,13 @@ class PlaylistSource(object):
         return None
 
     def _get_more_tracks(self):
-        _,_,user,_,playlist_id = self.uri.split(':')
+        fields = self.uri.split(':')
+        if len(fields) == 5:
+            _,_,user,_,playlist_id = fields
+        else:
+            _,_,playlist_id = fields
         try:
-            results = _get_spotify().user_playlist_tracks(user, playlist_id,
-                limit=self.limit, offset=self.next_offset)
+            results = _get_spotify().playlist_tracks(playlist_id, limit=self.limit, offset=self.next_offset)
         except spotipy.SpotifyException as e:
             raise engine.PBLException(self, e.msg)
 

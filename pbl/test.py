@@ -2,7 +2,6 @@ import sys
 import engine
 from standard_plugs import *
 from spotify_plugs import *
-from echonest_plugs import *
 #from track_manager import tlib
 from frog import *
 
@@ -347,7 +346,10 @@ def tester43():
     ps = CustomSorter(PlaylistSource('Teen Party'), lambda tid: len(tlib.get_attr(tid, 'title')))
     runner(ps)
 
-
+def tester44():
+    ps = PlaylistSource('New Talent', uri='spotify:playlist:37i9dQZF1DWTMVK39I3IIK')
+    runner(ps)
+    
 if __name__ == '__main__':
-    tester43()
+    tester44()
     
